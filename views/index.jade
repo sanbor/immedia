@@ -1,0 +1,10 @@
+extends layout
+
+block head
+  script(src='/js/craud.common.js')
+  script(src='/js/craud.audience.js')
+
+block content
+  h1= title
+  p Welcome to #{title}
+    div(id="broadcast-video")
