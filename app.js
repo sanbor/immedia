@@ -32,6 +32,17 @@ if ('development' == app.get('env')) {
 app.get('/', routes.index);
 app.get('/maker', routes.maker);
 
+io.sockets.on('connection', function(socket) {
+  console.log('client connected');
+  socket.on('maker',function() {
+    console.log('Maker is online!');
+  });
+  socket.on('disconnect', function() {
+    console.log('Maker is offline');
+  });
+});
+
 server.listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
 });
+
