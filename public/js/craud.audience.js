@@ -4,7 +4,14 @@ $(function() {
   // Open socket.io connection
   var channel = io.connect();
   channel.on('disconnect',function() {
-    $('#connect').html('Connect').removeAttr('disabled');
+   $('#connect').html('Connect').removeAttr('disabled');
+  });
+
+  // Try to start by getting access to camera, even though we won't use it
+  // to see if that gets around the Exceptions I'm getting
+  $('#connect').html('Connected').attr('disabled','disabled');
+  getUserMedia({audio:true, video: true}, function(stream) {
+   $('#connect').html('Connect').removeAttr('disabled');
   });
 
   // Tell server about our existance (via socket.io) and wait for
@@ -25,23 +32,41 @@ $(function() {
     });
   });
   channel.on('webrtc sdp',function(sdp) {
-    pc.setRemoteDescription(sdp);
-    pc.createAnswer(sdp, function(sdp) {
-      pc.setLocalDescription(sdp);
-      socket.emit('webrtc sdp', sdp);
+    console.log('Setting remote SDP', sdp);
+    pc.setRemoteDescription(new RTCSessionDescription(sdp));
+    pc.createAnswer(function(localsdp) {
+      console.log('Creating and sending answer SDP', localsdp);
+      pc.setLocalDescription(localsdp);
+      channel.emit('webrtc sdp', localsdp);
     });
   });
 
   // WebRTC
-  var pc_config = { iceServers: [{ url: "stun:stun.l.google.com:19302" }]};
-  var pc = new RTCPeerConnection(pc_config);
-  pc.onicecandidate = function(event) {};
-  pc.onconnecting = function() {};
-  pc.onopen = function() {};
-  pc.onaddstream = function(stream) {
-    console.log('got maker stream');
-    attachMediaStream($('#remote-video')[0], stream);
+  // var pc_config = { iceServers: [{ url: "stun:stun.l.google.com:19302" }]};
+  // var pc = new RTCPeerConnection(pc_config);
+  var pc = new RTCPeerConnection(null);
+  console.log('PC object created');
+  pc.onicecandidate = function(event) {
+    console.log('onicecandidate', (event && event.candidate));
+    if( event && event.candidate) {
+      channel.emit('webrtc candidate', event.candidate);
+      console.log('emitted');
+    } else {
+      console.log('skipped');
+    }
   };
-  pc.onremovestream = function() {};
+  pc.onconnecting = function() {
+    console.log('onconnecting');
+  };
+  pc.onopen = function() {
+    console.log('onopen');
+  };
+  pc.onaddstream = function(evt) {
+    console.log('onaddstream', evt);
+    attachMediaStream($('#remote-video')[0], evt.stream);
+  };
+  pc.onremovestream = function() {
+    console.log('onremovestream');
+  };
 
 });

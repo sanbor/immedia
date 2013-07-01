@@ -35,7 +35,7 @@ app.get('/maker', routes.maker);
 var maker;
 var makerIceCandidates = [];
 var makerSdp;
-var audience = [];  // Array of { name: , socket: , [sdp: ]}
+var audience = [];  // Array of { name: , socket: , sdp: , candidates: }
 
 io.sockets.on('connection', function(socket) {
   socket.on('maker',function() {
@@ -52,16 +52,17 @@ io.sockets.on('connection', function(socket) {
     if( maker) {
       maker.emit('audience add', name);
     }
-    if(makerIceCandidates.length > 0) {
-      socket.emit('webrtc candidates', makerIceCandidates);
-    }
     if(makerSdp) {
       socket.emit('webrtc sdp', makerSdp);
+    }
+    if(makerIceCandidates.length > 0) {
+      socket.emit('webrtc candidates', makerIceCandidates);
     }
   });
   socket.on('disconnect', function() {
     if(socket == maker) {
       maker = undefined;
+      audience.forEach(function(entry){ entry.socket.emit('maker left'); });
     } else {
       var left = audience.filter(function(entry, ix) { if(entry.socket == socket) { return audience.splice(ix,1); } });
       if(left.length > 0 && maker !== undefined) {
@@ -76,7 +77,16 @@ io.sockets.on('connection', function(socket) {
     if(socket == maker) {
       makerIceCandidates.push(candidate);
       audience.forEach(function(entry){ entry.socket.emit('webrtc candidate', candidate); });
-    }
+    } else {
+      var audienceEntry = audience.filter(function(entry) { return (entry.socket == socket); });
+      if( audienceEntry.length > 0) {
+        if( ! audienceEntry.candidates) { audienceEntry.candidates = []; }
+        audienceEntry.candidates.push(candidate);
+        if(maker) {
+          maker.emit('webrtc candidate', candidate);
+        }
+      }
+   }
   });
   socket.on('webrtc sdp', function(sdp) {
     if(socket == maker) {
