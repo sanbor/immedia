@@ -33,9 +33,8 @@ $(function() {
   });
 
   // WebRTC
-  //var pc_config = { iceServers: [{ url: "stun:stun.l.google.com:19302" }]};
-  //var pc = new RTCPeerConnection(pc_config);
-  var pc = new RTCPeerConnection(null);
+  var pc_config = { iceServers: [{ url: "stun:stun.l.google.com:19302" }]};
+  var pc = new RTCPeerConnection(pc_config);
 
   var stream = stream;
   getUserMedia({audio: true, video: true}, function(stream) {
@@ -56,6 +55,7 @@ $(function() {
       console.log('skipped');
     }
   };
+
   pc.onconnecting = function() {
     console.log('onconnecting');
   };

@@ -7,19 +7,13 @@ $(function() {
    $('#connect').html('Connect').removeAttr('disabled');
   });
 
-  // Try to start by getting access to camera, even though we won't use it
-  // to see if that gets around the Exceptions I'm getting
-  $('#connect').html('Connected').attr('disabled','disabled');
-  getUserMedia({audio:true, video: true}, function(stream) {
-   $('#connect').html('Connect').removeAttr('disabled');
-  });
-
   // Tell server about our existance (via socket.io) and wait for
   // video to start streaming to us
   $('#connect').on('click',function(ev) {
     $('#connect').html('Connected').attr('disabled','disabled');
     channel.emit('audience',$('#name').val());
   });
+
 
   channel.on('webrtc candidate',function(candidate) {
     console.log('candidate', candidate);
@@ -31,6 +25,7 @@ $(function() {
       pc.addIceCandidate(new RTCIceCandidate(candidate));
     });
   });
+
   channel.on('webrtc sdp',function(sdp) {
     console.log('Setting remote SDP', sdp);
     pc.setRemoteDescription(new RTCSessionDescription(sdp));
@@ -42,9 +37,8 @@ $(function() {
   });
 
   // WebRTC
-  // var pc_config = { iceServers: [{ url: "stun:stun.l.google.com:19302" }]};
-  // var pc = new RTCPeerConnection(pc_config);
-  var pc = new RTCPeerConnection(null);
+  var pc_config = { iceServers: [{ url: "stun:stun.l.google.com:19302" }]};
+  var pc = new RTCPeerConnection(pc_config);
   console.log('PC object created');
   pc.onicecandidate = function(event) {
     console.log('onicecandidate', (event && event.candidate));
