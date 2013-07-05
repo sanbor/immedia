@@ -62,6 +62,8 @@ io.sockets.on('connection', function(socket) {
   socket.on('disconnect', function() {
     if(socket == maker) {
       maker = undefined;
+      makerIceCandidates = [];
+      makerSdp = undefined;
       audience.forEach(function(entry){ entry.socket.emit('maker left'); });
     } else {
       var left = audience.filter(function(entry, ix) { if(entry.socket == socket) { return audience.splice(ix,1); } });

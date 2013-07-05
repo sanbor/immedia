@@ -1,5 +1,6 @@
+var pc;
 $(function() {
-  console.log("Starting Maker component");
+  timeLog("Starting Maker component");
 
   var audience = [];
  // Open socket.io channel and Webcam capture
@@ -23,18 +24,29 @@ $(function() {
     render();
   });
 
+  var remoteDesc;
+  $('#set-remote-sdp').on('click',function(ev) {
+    timeLog('connecting answer', remoteDesc);
+    pc.setRemoteDescription(remoteDesc);
+  });
   channel.on('webrtc sdp', function(sdp) {
-    console.log('received answer SDP', sdp);
-    pc.setRemoteDescription(new RTCSessionDescription(sdp));
+    timeLog('received answer SDP', sdp);
+    remoteDesc = new RTCSessionDescription(sdp);
+    // LEARN: If you don't set the remote description
+    // within a few (less than 5) seconds, the connection
+    // doesn't happen
+    // setTimeout(function() {
+      pc.setRemoteDescription(remoteDesc);
+    // }, 100);
   });
   channel.on('webrtc candidate', function(candidate) {
-    console.log('candidate', candidate);
+    timeLog('candidate', candidate);
     pc.addIceCandidate(new RTCIceCandidate(candidate));
   });
 
   // WebRTC
   var pc_config = { iceServers: [{ url: "stun:stun.l.google.com:19302" }]};
-  var pc = new RTCPeerConnection(pc_config);
+  pc = new RTCPeerConnection(pc_config);
 
   var stream = stream;
   getUserMedia({audio: true, video: true}, function(stream) {
@@ -47,43 +59,54 @@ $(function() {
 
   // Initiate WebRTC process
   pc.onicecandidate = function(event) {
-    console.log('onicecandidate', (event && event.candidate));
+    timeLog('onicecandidate', (event && event.candidate));
     if( event && event.candidate) {
       channel.emit('webrtc candidate', event.candidate);
-      console.log('emitted');
+      timeLog('emitted');
     } else {
-      console.log('skipped');
+      timeLog('skipped');
     }
   };
 
   pc.onconnecting = function() {
-    console.log('onconnecting');
+    timeLog('onconnecting');
   };
   pc.onopen = function() {
-    console.log('onopen');
+    timeLog('onopen');
   };
   pc.onremovestream = function() {
-    console.log('onremovestream');
+    timeLog('onremovestream');
   };
   pc.onaddstream = function() {
-    console.log('onaddstream');
+    timeLog('onaddstream');
   };
 
+  // Trigger ICE agent (we'll ignore the created offer)
+  pc.createOffer(function(sdp){
+    pc.setLocalDescription(sdp);
+  });
+
   $('#connect').on('click',function(ev) {
+    // LEARN: Can I re-use ICE candidates from an old PC?
+    // (Couldn't get it to work yet)
+    pc = new RTCPeerConnection(pc_config);
+    pc.onicecandidate = function() {};
+    channel.removeAllListeners('webrtc candidate');
+
     pc.createOffer(function(sdp){
-      console.log('createOffer callback. Setting local SDP', sdp);
+      timeLog('createOffer callback. Setting local SDP', sdp);
       pc.setLocalDescription(sdp);
       channel.emit('webrtc sdp', sdp);
     });
 
-    console.log('attached local stream to PC');
+    timeLog('attached local stream to PC');
  });
 
   function render() {
     var statusDiv = $('#status');
     statusDiv.children().remove();
     audience.forEach(function(entry) {
-      console.log('rendering: ' + entry);
+      timeLog('rendering: ' + entry);
       statusDiv.append($('<span>' + entry + '</span>'));
     });
   }

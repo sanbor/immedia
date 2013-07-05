@@ -1,5 +1,6 @@
+var pc;
 $(function() {
-  console.log("Starting audience component");
+  timeLog("Starting audience component");
 
   // Open socket.io connection
   var channel = io.connect();
@@ -15,52 +16,68 @@ $(function() {
   });
 
 
+  var remoteCandidates = [];
   channel.on('webrtc candidate',function(candidate) {
-    console.log('candidate', candidate);
-    pc.addIceCandidate(new RTCIceCandidate(candidate));
+    timeLog('candidate', candidate);
+    // pc.addIceCandidate(new RTCIceCandidate(candidate));
+    remoteCandidates.push(new RTCIceCandidate(candidate));
   });
   channel.on('webrtc candidates',function(candidates) {
     candidates.forEach(function(candidate) {
-      console.log('candidate', candidate);
-      pc.addIceCandidate(new RTCIceCandidate(candidate));
+      timeLog('candidate', candidate);
+      // pc.addIceCandidate(new RTCIceCandidate(candidate));
+      remoteCandidates.push(new RTCIceCandidate(candidate));
     });
   });
 
   channel.on('webrtc sdp',function(sdp) {
-    console.log('Setting remote SDP', sdp);
+    timeLog('Setting remote SDP', sdp);
     pc.setRemoteDescription(new RTCSessionDescription(sdp));
-    pc.createAnswer(function(localsdp) {
-      console.log('Creating and sending answer SDP', localsdp);
-      pc.setLocalDescription(localsdp);
-      channel.emit('webrtc sdp', localsdp);
+    remoteCandidates.forEach(function(candidate) {
+      pc.addIceCandidate(candidate);
     });
+    // LEARN: Creating an answer can take as long as we want
+    setTimeout(function() {
+      timeLog('will create answer');
+      pc.createAnswer(function(localsdp) {
+        timeLog('Creating and sending answer SDP', localsdp);
+        pc.setLocalDescription(localsdp);
+        // LEARN: If you don't send the answer within 3 seconds
+        // of having created it, the session doesn't begin
+        setTimeout(function() {
+          timeLog('Emitting answer');
+          channel.emit('webrtc sdp', localsdp);
+        }, 2000);
+      });
+    }, 100);
   });
 
   // WebRTC
   var pc_config = { iceServers: [{ url: "stun:stun.l.google.com:19302" }]};
-  var pc = new RTCPeerConnection(pc_config);
-  console.log('PC object created');
+  pc = new RTCPeerConnection(pc_config);
+  timeLog('PC object created');
   pc.onicecandidate = function(event) {
-    console.log('onicecandidate', (event && event.candidate));
+    // LEARN: We don't need to add our own ICE candidates?
+    timeLog('onicecandidate', (event && event.candidate));
     if( event && event.candidate) {
       channel.emit('webrtc candidate', event.candidate);
-      console.log('emitted');
+      timeLog('emitted');
     } else {
-      console.log('skipped');
+      timeLog('skipped');
     }
   };
   pc.onconnecting = function() {
-    console.log('onconnecting');
+    timeLog('onconnecting');
   };
   pc.onopen = function() {
-    console.log('onopen');
+    timeLog('onopen');
   };
   pc.onaddstream = function(evt) {
-    console.log('onaddstream', evt);
+    timeLog('onaddstream', evt);
     attachMediaStream($('#remote-video')[0], evt.stream);
   };
   pc.onremovestream = function() {
-    console.log('onremovestream');
+    timeLog('onremovestream');
   };
 
 });
