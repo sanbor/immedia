@@ -6,3 +6,11 @@ body {
 a {
   color: #00B7FF;
 }
+
+#local-video {
+  width: 75%;
+}
+
+#remote-video {
+  width: 20%;
+}

@@ -1,12 +1,11 @@
 extends layout
 
 block head
-  script(src='/js/craud.common.js')
   script(src='/js/craud.audience.js')
+  script(src='/js/craud.common.js')
 
 block content
   h1= title
   p Welcome to #{title}
-    input(type="text",placeholder="Name",id="name")
-    button(id="connect") Connect
+    video(id="local-video",autoplay,muted)
     video(id="remote-video",autoplay,muted)
