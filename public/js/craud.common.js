@@ -3,6 +3,9 @@ function timeLog() {
   console.log.apply(console, arguments);
 }
 
+// Version configuration
+config.version = 0.1;
+
 function keys(anObject) {
   var keys = [];
   for(var key in anObject) {
@@ -11,8 +14,8 @@ function keys(anObject) {
   return keys;
 }
 
+// TODO: Delete. This is a outside debugging hook
 var state;
-
 
 $(function() {
   timeLog("Starting Maker component");
@@ -46,6 +49,13 @@ $(function() {
   channel.on('id', function(myId) {
     state.id = myId;
     goOnline();
+  });
+
+  // System hooks e.g.: request reload
+  channel.on('system', function(data) {
+    if('reload' in data) {
+      window.location.reload();
+    }
   });
 
   // Peer connect/disconnect events
@@ -247,6 +257,12 @@ $(function() {
       });
     }
   }
+
+  $('#reload').on('click',function(evt) {
+    console.log('click');
+    channel.emit('system',{ reload: true });
+    window.location.reload();
+  });
 
   // Two-way mute controls
   $('#mute-self').on('click',function(evt) {

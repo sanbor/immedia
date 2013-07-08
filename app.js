@@ -102,6 +102,10 @@ io.sockets.on('connection', function(socket) {
     }
   });
 
+  socket.on('system', function(message) {
+    socket.broadcast('system',message);
+  });
+
   function pairPeerEvent(eventName) {
     socket.on(eventName, function(payload) {
       var peerSocket = globalState.peers[payload.peerId];
