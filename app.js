@@ -102,14 +102,17 @@ io.sockets.on('connection', function(socket) {
     }
   });
 
-  // WebRTC
-  socket.on('webrtc', function(payload) {
-    var peerSocket = globalState.peers[payload.peerId];
-    // Change the ID in peerId to be the sender instead of
-    // the recipient, which is what comes in on the message
-    payload.peerId = socket.state.id;
-    peerSocket.socket.emit('webrtc', payload);
-  });
+  function pairPeerEvent(eventName) {
+    socket.on(eventName, function(payload) {
+      var peerSocket = globalState.peers[payload.peerId];
+      // Change the ID in peerId to be the sender instead of
+      // the recipient, which is what comes in on the message
+      payload.peerId = socket.state.id;
+      peerSocket.socket.emit(eventName, payload);
+    });
+  }
+  pairPeerEvent('webrtc');
+  pairPeerEvent('controls');
 });
 
 server.listen(app.get('port'), function(){

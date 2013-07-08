@@ -2,10 +2,22 @@ extends layout
 
 block head
   script(src='/js/craud.audience.js')
-  script(src='/js/craud.common.js')
 
 block content
-  h1= title
-  p Welcome to #{title}
-    video(id="local-video",autoplay,muted)
-    video(id="remote-video",autoplay,muted)
+  h2 Remote-controlled mode
+  div(class='row')
+    div(class='span2')
+      div(class='row')
+        h3 Controls:
+        span Local: 
+        button(id="mute-self",class="btn btn-mini") Unmute
+        br
+        span Remote: 
+        button(id="mute-peer",class="btn btn-mini") Unmute
+      div(class='row')
+        video(id="local-video",autoplay,muted)
+    div(class='span10')
+      div(class='row')
+        h3 Main Window
+      div(class='row')
+        video(id="remote-video",autoplay,muted)

@@ -11,16 +11,23 @@ function keys(anObject) {
   return keys;
 }
 
+var state;
+
 
 $(function() {
   timeLog("Starting Maker component");
 
-  var state = {
+//  var state = {
+  state = {
     id: undefined,
     channel: undefined,
     stream: undefined,
     peers: {},
-    peerConnections: {}
+    peerConnections: {},
+    // peerId is used to make it easier to handle the
+    // one-to-one case, ignoring the multi-peer support
+    // on the rest of the code
+    peerId: undefined
   };
 
   // Get access to Webcam
@@ -61,15 +68,7 @@ $(function() {
 
   // Self disconnect event
   channel.on('disconnect', function() {
-    // Tear down all connections
-    keys(state.peerConnection).forEach(function(peerId) {
-      goDisconnect(peerId);
-    });
-    // Forget any information we think we have about connected peers
-    state.peers = {};
-    // And about ourselves
-    state.channel = undefined;
-    state.id = undefined;
+    goOffline();
   });
 
   function goReady() {
@@ -77,6 +76,8 @@ $(function() {
     if(state.channel === undefined || state.stream === undefined) 
       return;
 
+    // When everything is ready locally, announce our existence to server
+    // and get an ID assigned
     channel.emit(config.self);
   }
 
@@ -86,8 +87,32 @@ $(function() {
       goPeerAdded(peerId);
     });
   }
+  function goOffline() {
+    // Tear down all connections
+    keys(state.peerConnection).forEach(function(peerId) {
+      goDisconnect(peerId);
+    });
+    // Forget any information we think we have about connected peers
+    state.peers = {};
+    // 1-on-1
+    state.peerId = undefined;
+    // And about ourselves
+    state.channel = undefined;
+    state.id = undefined;
+    muteUpdateButtons();
+  }
 
   function goPeerAdded(peerId) {
+    // 1-on-1 support
+    if(state.peerId === undefined) {
+      state.peerId = peerId;
+    }
+    // 1-on-1: end
+
+    // Share current control status with peer
+    emitStatus(peerId);
+
+    // If appropriate, initiate the WebRTC connection
     if(config.self == 'master'/* TODO: Configure auto-connect per-client */) {
       goConnect(peerId);
     }
@@ -96,6 +121,13 @@ $(function() {
     if(peerId in state.peerConnections) {
       goDisconnect(peerId);
     }
+    delete state.peers[peerId];
+    // 1-on-1 support
+    if(state.peerId == peerId) {
+      state.peerId = undefined;
+      muteUpdateButtons();
+    }
+    // 1-on-1: end
   }
 
   function goConnect(peerId) {
@@ -170,5 +202,86 @@ $(function() {
   }
   function goAttachPeerStream(peerId, stream) {
     attachMediaStream($('#remote-video')[0], stream);
+  }
+
+
+  // Show status. Isolated from main code by running in a loop
+  // and intronspecting state instead of relying on being called
+  // when something changes
+  function renderStatus() {
+    $('#status-self-connected').html(state.channel===undefined?'Disconnected':(state.id===undefined?'Connecting ...':'Connected. ID=' + state.id));
+    peerKeys = keys(state.peers);
+    if(peerKeys.length > 0) {
+      var peerId = peerKeys[0];
+      $('#status-peer-connected').html('Connected. ID='+peerId);
+      var pc = state.peerConnections[peerId].pc;
+      // TODO: How to figure out the connection state of the WebRTC call?
+      $('#status-webrtc').html('Connecting ...');
+    } else {
+      $('#status-peer-connected').html('Disconnected');
+      $('#status-webrtc').html('Disconnected');
+    }
+    setTimeout(renderStatus, 500);
+  }
+  renderStatus();
+
+  // Sends the status of our controls to a peer
+  function emitStatus(peerId) {
+    if(state.peerId !== undefined) {
+      // 1-on-1
+      state.channel.emit('controls', {
+        peerId: peerId,
+        muted: $('#local-video')[0].muted
+      });
+    }
+  }
+
+  // Two-way mute controls
+  $('#mute-self').on('click',function(evt) {
+    muteSelfToggle();
+    // 1-on-1:
+    emitStatus(state.peerId);
+    muteUpdateButtons();
+  });
+  $('#mute-peer').on('click',function(evt) {
+    // 1-on-1
+    // Toggle our understanding of the remote muted state
+    // NOTE: unset means: muted
+    state.peers[state.peerId].muted = ('muted' in state.peers[state.peerId])?(!state.peers[state.peerId].muted):false;
+    // Send mute request to peer
+    if(state.peerId !== undefined) {
+      state.channel.emit('controls', {
+        peerId: state.peerId,
+        muteRequest: state.peers[state.peerId].muted
+      });
+    }
+    // Update buttons
+    muteUpdateButtons();
+  });
+
+  channel.on('controls',function(message) {
+    if('muteRequest' in message) {
+      muteSelfToggle();
+    }
+    if('muted' in message) {
+      state.peers[message.peerId].muted = message.muted;
+    }
+    muteUpdateButtons();
+  });
+
+  function muteSelfToggle() {
+    var muted = $('#local-video')[0].muted;
+    $('#local-video')[0].muted = !muted;
+    return !muted;
+  }
+  function muteUpdateButtons() {
+    $('#mute-self').html($('#local-video')[0].muted?'Unmute':'Mute');
+    // 1-on-1
+    if(state.peerId === undefined || state.channel === undefined) {
+      $('#mute-peer').html('Disconnected')[0].disabled = true;
+    } else {
+      $('#mute-peer').html(state.peers[state.peerId].muted?'Unmute':'Mute')[0].disabled = false;
+    }
+    // 1-on-1: end
   }
 });

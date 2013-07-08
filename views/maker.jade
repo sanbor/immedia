@@ -2,11 +2,35 @@ extends layout
 
 block head
   script(src='/js/craud.maker.js')
-  script(src='/js/craud.common.js')
 
 block content
-  h1 CraudMaker: master console
-  div Status:
-    span(id="status")
-  video(id="local-video",autoplay,muted)
-  video(id="remote-video",autoplay,muted)
+  h2 Manual mode
+  div(class='row')
+    div(class='span2')
+      div(class='row')
+        h3 Local view:
+        video(id="local-video",autoplay,muted)
+      div(class='row')
+        h3 Controls:
+        span Local: 
+        button(id="mute-self",class="btn btn-mini") Unmute
+        br
+        span Remote: 
+        button(id="mute-peer",class="btn btn-mini",disabled) Disconnected
+      div(class='row')
+        h3 Status:
+        div(class='container')
+          div(class='row')
+            span Ourselves: 
+            span(id='status-self-connected')
+          div(class='row')
+            span Peer: 
+            span(id='status-peer-connected')
+          div(class='row')
+            span WebRTC connection: 
+            span(id='status-webrtc')
+    div(class='span10')
+      div(class='row')
+        h3 Main Window
+      div(class='row')
+        video(id="remote-video",autoplay,muted)
