@@ -149,7 +149,8 @@ $(function() {
     var pc = state.peerConnections[peerId].pc;
     pc.onicecandidate = pc.onaddstream = function() {};
     // TODO: Do a proper and clean disconnection from PC
-    // TODO: Detach video from stream, if it had been attached
+    // Detach video from stream, if it had been attached
+    detachPeerStream(peerId);
     delete state.peerConnections[peerId];
   }
 
@@ -202,6 +203,17 @@ $(function() {
   }
   function goAttachPeerStream(peerId, stream) {
     attachMediaStream($('#remote-video')[0], stream);
+    $('#remote-video').show();
+    $('#no-remote-video').hide();
+  }
+  // TODO: Test well and improve this method to make sure it is
+  // releasing all necessary resources.
+  // Maybe extend adapter.js to make this work on all browsers?
+  function detachPeerStream(peerId) {
+    var videoElement = $('#remote-video')[0];
+    videoElement.pause();
+    $('#remote-video').hide();
+    $('#no-remote-video').show();
   }
 
 
