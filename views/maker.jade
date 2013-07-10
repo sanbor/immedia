@@ -3,12 +3,17 @@ extends layout
 block head
   script(src='/js/craud.maker.js')
 
+block location
+  a(class='brand') Welcome to Willow Garage
+
 block content
-  h2 Manual mode
-  div(class='row')
+  div(class='row-fluid')
+    div(class='span10')
+      div(class='row')
+        video(id="remote-video",autoplay,muted,style='display:none')
+        h2(id="no-remote-video") Disconnected from Remote
     div(class='span2')
       div(class='row')
-        h3 Local view:
         video(id="local-video",autoplay,muted)
       div(class='row')
         h3 Controls:
@@ -31,9 +36,4 @@ block content
           div(class='row')
             span WebRTC connection: 
             span(id='status-webrtc')
-    div(class='span10')
-      div(class='row')
-        h3 Main Window
-      div(class='row')
-        video(id="remote-video",autoplay,muted,style='display:none')
-        h2(id="no-remote-video") Disconnected from Remote
+

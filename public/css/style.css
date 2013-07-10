@@ -8,5 +8,11 @@ a {
 }
 
 video {
-  width: 100%
+  width: 100%;
+}
+
+#local-video {
+  position: absolute;
+  bottom: 20px;
+  width: 10%;
 }

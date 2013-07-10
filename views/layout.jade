@@ -4,8 +4,9 @@ html
     meta(charset='utf-8')
     title= title
     meta(name='viewport',content='width=device-width')
-    link(rel='stylesheet', href='/css/bootstrap.min.css')
     link(rel='stylesheet', href='/css/style.css')
+    link(rel='stylesheet', href='/css/bootstrap.min.css')
+    link(rel='stylesheet', href='/css/bootstrap-responsive.min.css')
     script(src='/socket.io/socket.io.js')
     script(src='/js/vendor/jquery-1.10.1.min.js')
     script(src='/js/vendor/adapter.js')
@@ -16,5 +17,6 @@ html
       div(class='navbar-inner')
         div(class='container')
           a(class='brand') Wormhole v1.1
-    div(class='container')
+          block location
+    div(class='container-fluid')
       block content
