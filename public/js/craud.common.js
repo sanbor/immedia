@@ -99,7 +99,7 @@ $(function() {
   }
   function goOffline() {
     // Tear down all connections
-    keys(state.peerConnection).forEach(function(peerId) {
+    keys(state.peerConnections).forEach(function(peerId) {
       goDisconnect(peerId);
     });
     // Forget any information we think we have about connected peers
@@ -154,7 +154,6 @@ $(function() {
     });
   }
   function goDisconnect(peerId) {
-    $('#status').html('Disconnected from ' + peerId);
     // Cancel potential callbacks about this connection
     var pc = state.peerConnections[peerId].pc;
     pc.onicecandidate = pc.onaddstream = function() {};

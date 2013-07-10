@@ -103,7 +103,7 @@ io.sockets.on('connection', function(socket) {
   });
 
   socket.on('system', function(message) {
-    socket.broadcast('system',message);
+    socket.broadcast.emit('system',message);
   });
 
   function pairPeerEvent(eventName) {
