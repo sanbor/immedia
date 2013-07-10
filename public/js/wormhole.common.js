@@ -41,7 +41,10 @@ $(function() {
   });
 
   // Open socket.io channel
-  var channel = io.connect();
+  var channel = io.connect('/',{
+     'reconnection limit': 5000,
+     'max reconnection attempts': (12 * 60 * 2)
+  });
   channel.on('connect', function() {
     state.channel = channel;
     goReady();
