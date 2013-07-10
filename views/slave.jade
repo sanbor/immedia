@@ -1,0 +1,24 @@
+extends layout
+
+block head
+  script(src='/js/wormhole.slave.js')
+
+block location
+  a(class='brand') Welcome to Buenos Aires, Argentina
+
+block content
+  div(class='row-fluid')
+    div(class='span10')
+      div(class='row-fluid')
+        video(id="remote-video",autoplay,muted,style='display:none')
+        h2(id="no-remote-video") Disconnected from Argentina
+    div(class='span2')
+      div(class='row-fluid')
+        div(class='row-fluid')
+          span Local: 
+          button(id="mute-self",class="btn btn-mini") Unmute
+        div(class='row-fluid')
+          span Remote: 
+          button(id="mute-peer",class="btn btn-mini") Unmute
+      div(class='row-fluid')
+        video(id="local-video",autoplay,muted)
