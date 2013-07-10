@@ -1,4 +1,4 @@
-
+#!/bin/env node
 /**
  * Module dependencies.
  */
@@ -14,7 +14,8 @@ var server = http.createServer(app);
 var io = socketio.listen(server);
 
 // all environments
-app.set('port', process.env.PORT || 3000);
+app.set('ipaddress', process.env.OPENSHIFT_INTERNAL_IP || process.env.OPENSHIFT_NODEJS_IP || "0.0.0.0");
+app.set('port', process.env.OPENSHIFT_INTERNAL_PORT || process.env.OPENSHIFT_NODEJS_PORT || 3000);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 app.use(express.favicon());
@@ -119,7 +120,7 @@ io.sockets.on('connection', function(socket) {
   pairPeerEvent('controls');
 });
 
-server.listen(app.get('port'), function(){
+server.listen(app.get('port'), app.get('ipaddress'), function(){
   console.log('Express server listening on port ' + app.get('port'));
 });
 
