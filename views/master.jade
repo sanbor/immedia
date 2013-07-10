@@ -1,0 +1,39 @@
+extends layout
+
+block head
+  script(src='/js/wormhole.master.js')
+
+block location
+  a(class='brand') Welcome to Willow Garage
+
+block content
+  div(class='row-fluid')
+    div(class='span10')
+      div(class='row')
+        video(id="remote-video",autoplay,muted,style='display:none')
+        h2(id="no-remote-video") Disconnected from Willow Garage
+    div(class='span2')
+      div(class='row')
+        video(id="local-video",autoplay,muted)
+      div(class='row')
+        h3 Controls:
+        span Local: 
+        button(id="mute-self",class="btn btn-mini") Unmute
+        br
+        span Remote: 
+        button(id="mute-peer",class="btn btn-mini",disabled) Disconnected
+        br
+        button(id="reload",class="btn btn-mini") Reload both
+      div(class='row')
+        h3 Status:
+        div(class='container')
+          div(class='row')
+            span Ourselves: 
+            span(id='status-self-connected')
+          div(class='row')
+            span Peer: 
+            span(id='status-peer-connected')
+          div(class='row')
+            span WebRTC connection: 
+            span(id='status-webrtc')
+
