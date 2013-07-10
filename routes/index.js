@@ -3,10 +3,10 @@
  * GET home page.
  */
 
-exports.index = function(req, res){
-  res.render('index', { title: 'CraudWatcher' });
+exports.slave = function(req, res){
+  res.render('slave');
 };
 
-exports.maker = function(req, res){
-  res.render('maker', { title: 'CraudMaker' });
+exports.master = function(req, res){
+  res.render('master');
 };

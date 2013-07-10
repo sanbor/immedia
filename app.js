@@ -29,8 +29,8 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
-app.get('/', routes.index);
-app.get('/maker', routes.maker);
+app.get('/wg', routes.slave);
+app.get('/ar', routes.master);
 
 /**
  * State is handled as follows:
