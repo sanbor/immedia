@@ -267,7 +267,7 @@ $(function() {
   });
 
   // Two-way mute controls
-  $('#mute-self').on('click',function(evt) {
+  $('#mute-self,#remote-video').on('click',function(evt) {
     muteSelfToggle();
     // 1-on-1:
     emitStatus(state.peerId);
