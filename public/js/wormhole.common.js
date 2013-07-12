@@ -212,6 +212,14 @@ $(function() {
 
   function goAttachLocalStream(stream) {
     attachMediaStream($('#local-video')[0], stream);
+    if(config.muted) {
+      muteSelfToggle();
+      // 1-on-1
+      if(state.peerId) {
+        emitStatus(state.peerId);
+      }
+    }
+    muteUpdateButtons();
   }
   function goAttachPeerStream(peerId, stream) {
     attachMediaStream($('#remote-video')[0], stream);
@@ -251,13 +259,10 @@ $(function() {
 
   // Sends the status of our controls to a peer
   function emitStatus(peerId) {
-    if(state.peerId !== undefined) {
-      // 1-on-1
-      state.channel.emit('controls', {
-        peerId: peerId,
-        muted: $('#local-video')[0].muted
-      });
-    }
+    state.channel.emit('controls', {
+      peerId: peerId,
+      muted: muteStatus()
+    });
   }
 
   $('#reload').on('click',function(evt) {
@@ -299,13 +304,20 @@ $(function() {
     muteUpdateButtons();
   });
 
-  function muteSelfToggle() {
-    var muted = $('#local-video')[0].muted;
-    $('#local-video')[0].muted = !muted;
-    return !muted;
+  // Returns the current local mute status
+  // true: muted
+  // false: not muted
+  function muteStatus() {
+    return !state.stream.getAudioTracks()[0].enabled;
   }
+  // Toggles the mute state
+  function muteSelfToggle() {
+    var audio = state.stream.getAudioTracks()[0];
+    audio.enabled = !audio.enabled;
+  }
+
   function muteUpdateButtons() {
-    $('#mute-self').html($('#local-video')[0].muted?'Unmute':'Mute');
+    $('#mute-self').html(muteStatus()?'Unmute':'Mute');
     // 1-on-1
     if(state.peerId === undefined || state.channel === undefined) {
       $('#mute-peer').html('Disconnected')[0].disabled = true;
@@ -314,4 +326,4 @@ $(function() {
     }
     // 1-on-1: end
   }
-});
+})
