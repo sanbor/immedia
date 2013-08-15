@@ -222,6 +222,7 @@ $(function() {
     muteUpdateButtons();
   }
   function goAttachPeerStream(peerId, stream) {
+    state.peers[peerId].stream = stream;
     attachMediaStream($('#remote-video')[0], stream);
     $('#remote-video').show();
     $('#no-remote-video').hide();
@@ -230,6 +231,7 @@ $(function() {
   // releasing all necessary resources.
   // Maybe extend adapter.js to make this work on all browsers?
   function detachPeerStream(peerId) {
+    state.peers[peerId].stream = undefined;
     var videoElement = $('#remote-video')[0];
     videoElement.pause();
     $('#remote-video').hide();
@@ -293,6 +295,37 @@ $(function() {
     // Update buttons
     muteUpdateButtons();
   });
+
+  var oldData;
+  function checkStuck() {
+    if(state.peerId != undefined) {
+      console.log('capture begins');
+      var video = $('#remote-video')[0];
+      var canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      console.log('capture done');
+      // window.open(canvas.toDataURL());
+      if(oldData) {
+        var diffTotal = 0;
+        for(var i=0;i<data.data.length;i++) {
+          diffTotal += Math.abs(data.data[i] - oldData.data[i]);
+        }
+        console.log('Difftotal: ' + diffTotal);
+        $('#stuck-data').html(diffTotal);
+        if(diffTotal == 0) {
+          $('#stuck-banner').show();
+        } else {
+          $('#stuck-banner').hide();
+        }
+      }
+      oldData = data;
+    }
+  };
+  setInterval(checkStuck, 10000);
 
   channel.on('controls',function(message) {
     if('muteRequest' in message) {

@@ -24,6 +24,11 @@ block content
         button(id="mute-peer",class="btn btn-mini",disabled) Disconnected
         br
         button(id="reload",class="btn btn-mini") Reload both
+        br
+        div(id="stuck-data-container")
+          span Diff:
+          span(id="stuck-data")
+        h1(id="stuck-banner",style="display:none") Connection seems to be stuck, please reload
       div(class='row')
         h3 Status:
         div(class='container')
