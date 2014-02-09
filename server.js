@@ -36,8 +36,7 @@ if ('development' == app.get('env')) {
 app.get('/wg', routes.slave);
 app.get('/ar', routes.master);
 
-app.get('/', routes.participant);
-app.get('/office', routes.office);
+app.get('/', routes.office);
 
 /**
  * State is handled as follows:
