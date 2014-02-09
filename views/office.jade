@@ -15,7 +15,7 @@ block content
           th(width='70px') Who
           th Message
         tr(ng-repeat='message in messages')
-          td Now
+          td {{ when(message.timestamp) }}
           td
             img(src='{{ message.image }}')
           td {{ message.text }}

@@ -5,6 +5,7 @@ function WebcamControl($scope) {
   // Display
   $scope.status = 'Starting'
   $scope.messages = [];  // Messages rendered in chat list
+  $scope.when = undefined; // Displays timestamp using moment.js
   // Input
   $scope.inputText = undefined; // chat box text input
   // Events
@@ -43,6 +44,10 @@ function WebcamControl($scope) {
       $scope.sendMessage();
       $('textarea').val('');
     }
+  };
+
+  $scope.when = function(timestamp) {
+    return moment(timestamp).fromNow();
   };
 
   /**
