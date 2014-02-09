@@ -136,9 +136,15 @@ server.listen(app.get('port'), app.get('ipaddress'), function(){
  */
 io.of('/facechat').
   on('connection', function(socket) {
-    console.log('new client ready');
     socket.on('message', function(msg) {
       console.log('Message through. Image size = ', msg && msg.image && msg.image.length);
       socket.broadcast.emit('message', msg);
+    });
+    socket.on('update', function(msg) {
+      msg.id = socket.id;
+      socket.broadcast.emit('update', msg);
+    });
+    socket.on('disconnect', function() {
+      socket.broadcast.emit('exit', { id: socket.id });
     });
   });

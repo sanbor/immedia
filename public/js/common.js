@@ -6,6 +6,7 @@ function WebcamControl($scope) {
   $scope.status = 'Starting'
   $scope.messages = [];  // Messages rendered in chat list
   $scope.when = undefined; // Displays timestamp using moment.js
+  $scope.participants = undefined; // List of people active in the chat
   // Input
   $scope.inputText = undefined; // chat box text input
   // Events
@@ -16,6 +17,16 @@ function WebcamControl($scope) {
   var stream;  // Webcam stream
   var socket;  // socket.io connection
   var canvas = $('#self')[0];  // canvas on which snapshots are being drawn
+  var participantMap = {};  // Map of participants, keyed by ID
+    // each participant entry will have fields 'image', 'timestamp'
+
+  $scope.participants = function() {
+    ret = [];
+    for(var id in participantMap) {
+      ret.push(participantMap[id]);
+    }
+    return ret;
+  };
 
   /**
    * Triggered by clicking on the 'send' button
@@ -73,6 +84,7 @@ function WebcamControl($scope) {
         $scope.$digest();
         stream = localStream;
         startSnapshots();
+        startSocketIO();
       }, function(err) {
         $scope.status = 'Error getting user media: ' + err;
         $scope.$digest();
@@ -92,6 +104,27 @@ function WebcamControl($scope) {
       addMessage(msg);
       $scope.$digest();
     });
+    socket.on('update', function(msg) {
+      console.log('got update');
+      if(!(msg.id in participantMap)) {
+        participantMap[msg.id] = {};
+      }
+      participantMap[msg.id].image = msg.image;
+      participantMap[msg.id].timestamp = msg.timestamp;
+      $scope.$digest();
+    });
+    socket.on('exit', function(msg) {
+      if(msg.id in participantMap) {
+        delete participantMap[msg.id];
+      }
+      $scope.$digest();
+    });
+    setInterval(function() {
+      socket.emit('update',{
+        image: canvas.toDataURL(),
+        timestamp: new Date().getTime()
+      });
+    }, 5000);
   }
 
   function startSnapshots() {
@@ -103,7 +136,6 @@ function WebcamControl($scope) {
   }
 
   startWebcam();
-  startSocketIO();
 }
 
 // Hack to force submit on enter for the input textarea

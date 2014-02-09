@@ -9,6 +9,10 @@ block location
 block content
   div(class='row',ng-controller='WebcamControl')
     div(class='col-md-9')
+      table(class='table table-condensed table-bordered')
+        tr
+          td(ng-repeat='participant in participants()')
+            img(src='{{ participant.image }}')
       table(class='table table-condensed table-bordered table-striped')
         tr
           th(width='100px') When
