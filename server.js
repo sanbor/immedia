@@ -14,8 +14,11 @@ var server = http.createServer(app);
 var io = socketio.listen(server);
 
 // all environments
-app.set('ipaddress', process.env.OPENSHIFT_INTERNAL_IP || process.env.OPENSHIFT_NODEJS_IP || "0.0.0.0");
-app.set('port', process.env.PORT || process.env.OPENSHIFT_INTERNAL_PORT || process.env.OPENSHIFT_NODEJS_PORT || 3000);
+app.set('ipaddress', process.env.OPENSHIFT_INTERNAL_IP || 
+        process.env.OPENSHIFT_NODEJS_IP || "0.0.0.0");
+app.set('port', process.env.PORT || 
+        process.env.OPENSHIFT_INTERNAL_PORT || 
+        process.env.OPENSHIFT_NODEJS_PORT || 3000);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 app.use(express.favicon());
@@ -32,6 +35,9 @@ if ('development' == app.get('env')) {
 
 app.get('/wg', routes.slave);
 app.get('/ar', routes.master);
+
+app.get('/', routes.participant);
+app.get('/office', routes.office);
 
 /**
  * State is handled as follows:

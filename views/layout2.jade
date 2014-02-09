@@ -1,0 +1,26 @@
+doctype html
+html(ng-app)
+  head
+    meta(charset='utf-8')
+    title= title
+    meta(name='viewport',content='width=device-width, initial-scale=1')
+    link(rel='stylesheet', href='/css/style2.css')
+    link(rel='stylesheet', href='//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css')
+    script(src='//code.jquery.com/jquery-1.10.1.min.js')
+    script(src='//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js')
+    script(src='//ajax.googleapis.com/ajax/libs/angularjs/1.2.12/angular.min.js')
+    script(src='/socket.io/socket.io.js')
+    script(src='/js/vendor/adapter.js')
+    block head
+    script(src='/js/common.js')
+  body
+    div(class='navbar navbar-inverse navbar-fixed-top')
+      div(class='container')
+        div(class='navbar-header')
+            a(href='#', class='navbar-brand') Wormhole v2.1
+            block location
+        div(class='collapse navbar-collapse')
+          ul
+            li uno
+    div(class='container')
+      block content
