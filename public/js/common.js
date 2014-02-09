@@ -16,20 +16,6 @@ function WebcamControl($scope) {
   var socket;  // socket.io connection
   var canvas = $('#self')[0];  // canvas on which snapshots are being drawn
 
-
-  /* Quick sample / exercise on how to update on external events
-  var i=0;
-  setInterval(function() {
-    $scope.status = 'Idle ' + i++;
-    $scope.$digest();
-    *//*
-    $scope.$apply(function() {
-      $scope.status = 'Idle ' + i;
-    });
-   *//*
-  }, 1000);
-  */
-
   /**
    * Triggered by clicking on the 'send' button
    */
@@ -42,6 +28,7 @@ function WebcamControl($scope) {
 
     // Emit message through socket.io
     var msg = {
+      timestamp: new Date().getTime(),
       text: $scope.inputText,
       image: URL
     };
@@ -58,8 +45,18 @@ function WebcamControl($scope) {
     }
   };
 
+  /**
+   * Adds the message to the data model (which is in turn automatically rendered
+   * through Angular.js bindings)
+   */
   function addMessage(msg) {
-    $scope.messages.push(msg);
+    // Insert the new message to the top of the list of messages
+    $scope.messages.splice(0, 0, msg);
+    // Crop the list of in-memory (and rendered) messages to a fixed maximum size
+    var max_rows = 40; // Max number of rows hardcoded here
+    if($scope.messages.length > max_rows) {
+      $scope.messages.splice(max_rows,$scope.messages.length - max_rows);
+    }
   }
 
   function startWebcam() {
