@@ -130,3 +130,15 @@ server.listen(app.get('port'), app.get('ipaddress'), function(){
   console.log('Express server listening on port ' + app.get('port'));
 });
 
+/****
+ * ansible / facechat new function
+ * TODO: How can I move this off to its own file?
+ */
+io.of('/facechat').
+  on('connection', function(socket) {
+    console.log('new client ready');
+    socket.on('message', function(msg) {
+      console.log('Message through. Image size = ', msg && msg.image && msg.image.length);
+      socket.broadcast.emit('message', msg);
+    });
+  });
