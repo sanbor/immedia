@@ -1,7 +1,6 @@
 extends layout2
 
 block head
-  script(src='/js/office.js')
 
 block location
   a(class='navbar-brand') Creativa 77 - Wormhole Ansible
@@ -12,7 +11,7 @@ block content
       table(class='table table-condensed table-bordered')
         tr
           td(ng-repeat='participant in participants()')
-            img(src='{{ participant.image }}')
+            img(ng-src='{{ participant.image }}')
       table(class='table table-condensed table-bordered table-striped')
         tr
           th(width='100px') When
@@ -21,7 +20,7 @@ block content
         tr(ng-repeat='message in messages')
           td {{ when(message.timestamp) }}
           td
-            img(src='{{ message.image }}')
+            img(ng-src='{{ message.image }}')
           td {{ message.text }}
     div(class='col-md-3')
       div Status: {{ status }}
