@@ -36,7 +36,6 @@ if ('development' == app.get('env')) {
 app.get('/wg', routes.slave);
 app.get('/ar', routes.master);
 
-app.get('/', routes.office);
 
 /**
  * State is handled as follows:
@@ -133,17 +132,36 @@ server.listen(app.get('port'), app.get('ipaddress'), function(){
  * ansible / facechat new function
  * TODO: How can I move this off to its own file?
  */
-io.of('/facechat').
-  on('connection', function(socket) {
-    socket.on('message', function(msg) {
-      console.log('Message through. Image size = ', msg && msg.image && msg.image.length);
-      socket.broadcast.emit('message', msg);
+var rooms = {};
+app.get('/', function(req, res) {
+  res.redirect('/r/default');
+});
+app.get('/r/:room_name', function(req, res) {
+  var roomName = req.params.room_name;
+  console.log('d');
+  if(!(roomName in rooms)) {
+    console.log('e');
+    startRoom(roomName);
+    rooms[roomName] = true;
+  }
+  res.render('office');
+});
+
+function startRoom(roomName) {
+  console.log('creating namespace: ' + roomName);
+  io.of('/'+roomName).
+    on('connection', function(socket) {
+      socket.on('message', function(msg) {
+        console.log('Message through. Image size = ', msg && msg.image && msg.image.length);
+        socket.broadcast.emit('message', msg);
+      });
+      socket.on('update', function(msg) {
+        msg.id = socket.id;
+        socket.broadcast.emit('update', msg);
+      });
+      socket.on('disconnect', function() {
+        socket.broadcast.emit('exit', { id: socket.id });
+      });
     });
-    socket.on('update', function(msg) {
-      msg.id = socket.id;
-      socket.broadcast.emit('update', msg);
-    });
-    socket.on('disconnect', function() {
-      socket.broadcast.emit('exit', { id: socket.id });
-    });
-  });
+}
+

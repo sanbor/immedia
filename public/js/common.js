@@ -91,7 +91,12 @@ function WebcamControl($scope) {
       });
   }
   function startSocketIO() {
-    socket = io.connect('/facechat');
+    // Extract room name from URL, keep the '/'
+    var ix = window.location.href.lastIndexOf('/');
+    var roomName = window.location.href.substring(ix);
+
+    // socket = io.connect('/facechat');
+    socket = io.connect(roomName);
     socket.on('connect', function() {
       $scope.status = 'Socket.IO connected';
       $scope.$digest();
