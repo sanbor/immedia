@@ -26,7 +26,8 @@ block content
     div(class='col-md-3')
       div Status: {{ status }}
       canvas(id='self',width='70',height='50')
+      canvas(id='copy',width='70',height='50')
       form(ng-submit='sendMessage()')
         textarea(class='form-control',ng-model='inputText',ng-keyup='keyup($event)')
         button(class='btn btn-default') Send
-      video(autoplay,style="display:none")
+      video(autoplay,style='display:none',width='640',height='480')

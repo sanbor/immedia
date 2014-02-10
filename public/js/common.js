@@ -129,9 +129,14 @@ function WebcamControl($scope) {
 
   function startSnapshots() {
     var context = canvas.getContext('2d');
-    attachMediaStream($('video')[0], stream);
+    var video = $('video')[0];
+    attachMediaStream(video, stream);
     setInterval(function() {
-      context.drawImage($('video')[0], 0, 0, canvas.clientWidth, canvas.clientHeight);
+      var crop = 25;
+      context.drawImage(video, 160, 120, 360, 240,
+                       0, 0, canvas.clientWidth, canvas.clientHeight);
+      $('#copy')[0].getContext('2d').drawImage(video, 0, 0,
+                                               canvas.clientWidth, canvas.clientHeight);
     }, 1000);
   }
 
