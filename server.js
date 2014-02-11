@@ -16,6 +16,9 @@ var app = express();
 var server = http.createServer(app);
 var io = socketio.listen(server);
 
+// Configure Socket.IO
+io.set('log level', 1);
+
 // Configure for all environments
 app.set('ipaddress', process.env.OPENSHIFT_INTERNAL_IP || 
         process.env.OPENSHIFT_NODEJS_IP || "0.0.0.0");
