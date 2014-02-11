@@ -1,4 +1,5 @@
-function WebcamControl($scope) {
+angular.module('app', []).
+controller('WebcamControl',function($scope) {
   // --------------------------------------------------------
   // Angular bound variables
   // --------------------------------------------------------
@@ -141,21 +142,9 @@ function WebcamControl($scope) {
       context.drawImage(video, 160, 120, 360, 240,
                        0, 0, canvas.clientWidth, canvas.clientHeight);
       $('#copy')[0].getContext('2d').drawImage(video, 0, 0,
-                                               canvas.clientWidth, canvas.clientHeight);
+                       canvas.clientWidth, canvas.clientHeight);
     }, 1000);
   }
 
   startWebcam();
-}
-
-// Hack to force submit on enter for the input textarea
-/*
-$(function(){
-  $('form > textarea').on('keyup', function(e){
-    if (e.keyCode == 13) {
-      // do whatever you want to do, for example submit form
-      $(this).parent('form').trigger('submit');
-    }
-  });
 });
-*/
