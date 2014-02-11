@@ -1,5 +1,5 @@
-angular.module('app', []).
-controller('WebcamControl',function($scope) {
+angular.module('app', ['ngSanitize']).
+controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
   // --------------------------------------------------------
   // Angular bound variables
   // --------------------------------------------------------
@@ -12,7 +12,6 @@ controller('WebcamControl',function($scope) {
   $scope.inputText = undefined; // chat box text input
   // Events
   $scope.sendMessage = undefined; // Send message clicked
-
 
   // Internal / status / private variables
   var stream;  // Webcam stream
@@ -60,6 +59,11 @@ controller('WebcamControl',function($scope) {
 
   $scope.when = function(timestamp) {
     return moment(timestamp).fromNow();
+  };
+
+  $scope.setHtmlToTrusted = function(html_code)
+  {
+    return $sce.trustAsHtml(html_code);
   };
 
   /**
@@ -147,4 +151,4 @@ controller('WebcamControl',function($scope) {
   }
 
   startWebcam();
-});
+}]);

@@ -21,7 +21,8 @@ block content
           td {{ when(message.timestamp) }}
           td
             img(ng-src='{{ message.image }}')
-          td {{ message.text }}
+          td
+            div(ng-bind-html='setHtmlToTrusted(message.text)')
     div(class='col-md-3')
       div Status: {{ status }}
       canvas(id='self',width='70',height='50')
