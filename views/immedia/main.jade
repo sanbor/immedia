@@ -1,0 +1,32 @@
+extends layout
+
+block head
+
+block location
+  a(class='navbar-brand') - Creativa 77
+
+block content
+  div(class='row',ng-controller='WebcamControl')
+    div(class='col-md-9')
+      table(class='table table-condensed table-bordered')
+        tr
+          td(ng-repeat='participant in participants()')
+            img(ng-src='{{ participant.image }}')
+      table(class='table table-condensed table-bordered table-striped')
+        tr
+          th(width='100px') When
+          th(width='70px') Who
+          th Message
+        tr(ng-repeat='message in messages')
+          td {{ when(message.timestamp) }}
+          td
+            img(ng-src='{{ message.image }}')
+          td {{ message.text }}
+    div(class='col-md-3')
+      div Status: {{ status }}
+      canvas(id='self',width='70',height='50')
+      canvas(id='copy',width='70',height='50')
+      form(ng-submit='sendMessage()')
+        textarea(class='form-control',ng-model='inputText',ng-keyup='keyup($event)')
+        button(class='btn btn-default') Send
+      video(autoplay,style='display:none',width='640',height='480')
