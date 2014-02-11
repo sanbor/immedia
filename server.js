@@ -1,19 +1,22 @@
 #!/bin/env node
 /**
- * Module dependencies.
+ * This is the main server entry point. In here we do general environment configuration
+ * but not much more. The rest (main application logic) we separate in individual
+ * application files loaded below
  */
 
+
 var express = require('express')
-  , routes = require('./routes')
   , http = require('http')
   , socketio = require('socket.io')
   , path = require('path');
 
+// Initialize express and Socket.IO
 var app = express();
 var server = http.createServer(app);
 var io = socketio.listen(server);
 
-// all environments
+// Configure for all environments
 app.set('ipaddress', process.env.OPENSHIFT_INTERNAL_IP || 
         process.env.OPENSHIFT_NODEJS_IP || "0.0.0.0");
 app.set('port', process.env.PORT || 
@@ -28,140 +31,20 @@ app.use(express.methodOverride());
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
 
-// development only
+// Error handler for development environment only
 if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
-app.get('/wg', routes.slave);
-app.get('/ar', routes.master);
-
-
-/**
- * State is handled as follows:
- * - In the 'globalState' variable below, comprised of the next available
- *   ID to give a peer and a dictionary of peer 'state' objects, keyed
- *   by peer ID.
- * - Each 'state' object has:
- *   - type: ['master' or 'slave' or whatever]
- *   - id: the peer ID
- *   - socket: link to the socket.io socket object
- * - The 'state' object is also set to the socket as its 'state' propery
- */
-var globalState = {
-  nextId: 1,
-  peers: {}
-};
-
-// TODO: Find what is the best way to do this on Node JS
-function keys(anObject) {
-  var keys = [];
-  for(var key in anObject) {
-    keys.push(key);
-  }
-  return keys;
-}
-
-function createPeer(socket, role) {
-  // A new peer is registering
-  // 1- Allocate an ID and send back to client
-  var newPeerId = role + ":" + globalState.nextId++;
-  state = {
-    type: role,
-    id: newPeerId,
-    socket: socket
-  };
-  console.log('Creating new peer: ' + newPeerId);
-  // TODO: Maybe replace by returning data via ACK
-  socket.emit('id', newPeerId);
-
-  // 2- Send current list of peers
-  // TODO: Use broadcast instead
-  socket.emit('peer', {'add': keys(globalState.peers) });
-
-  // 3- Notify other peers of this new client
-  for(var peerId in globalState.peers) {
-    globalState.peers[peerId].socket.emit('peer', {'add': [newPeerId] });
-  }
-
-  // 4- Save this new peer in our globalState and in the socket
-  globalState.peers[newPeerId] = state;
-  socket.state = state;
-}
-
-io.sockets.on('connection', function(socket) {
-  socket.on('master',function() {
-    createPeer(socket, 'master');
-  });
-  socket.on('slave', function(name) {
-    createPeer(socket, 'slave');
-  });
-  socket.on('disconnect', function() {
-    if(!socket.state)
-      // It never even registered as slave or master
-      // e.g. fast reload
-      return;
-    delete globalState.peers[socket.state.id];
-    for(var peerId in globalState.peers) {
-      globalState.peers[peerId].socket.emit('peer', {'del': [socket.state.id] });
-    }
-  });
-
-  socket.on('system', function(message) {
-    socket.broadcast.emit('system',message);
-  });
-
-  function pairPeerEvent(eventName) {
-    socket.on(eventName, function(payload) {
-      var peerSocket = globalState.peers[payload.peerId];
-      // Change the ID in peerId to be the sender instead of
-      // the recipient, which is what comes in on the message
-      payload.peerId = socket.state.id;
-      peerSocket.socket.emit(eventName, payload);
-    });
-  }
-  pairPeerEvent('webrtc');
-  pairPeerEvent('controls');
-});
-
+// Start listening
 server.listen(app.get('port'), app.get('ipaddress'), function(){
   console.log('Express server listening on port ' + app.get('port'));
 });
 
-/****
- * ansible / facechat new function
- * TODO: How can I move this off to its own file?
- */
-var rooms = {};
-app.get('/', function(req, res) {
-  res.redirect('/r/default');
-});
-app.get('/r/:room_name', function(req, res) {
-  var roomName = req.params.room_name;
-  console.log('d');
-  if(!(roomName in rooms)) {
-    console.log('e');
-    startRoom(roomName);
-    rooms[roomName] = true;
-  }
-  res.render('office');
-});
+// Application entry points
 
-function startRoom(roomName) {
-  console.log('creating namespace: ' + roomName);
-  io.of('/'+roomName).
-    on('connection', function(socket) {
-      socket.on('message', function(msg) {
-        console.log('Message through. Image size = ', msg && msg.image && msg.image.length);
-        socket.broadcast.emit('message', msg);
-      });
-      socket.on('update', function(msg) {
-        msg.id = socket.id;
-        socket.broadcast.emit('update', msg);
-      });
-      socket.on('disconnect', function() {
-        socket.broadcast.emit('exit', { id: socket.id });
-      });
-    });
-}
+// Wormhole (currently disabled)
+// var wh = require('./apps/wormhole.js')(app, io);
 
+// Immedia
+var im = require('./apps/immedia.js')(app, io);
