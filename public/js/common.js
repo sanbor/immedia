@@ -12,6 +12,8 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
   $scope.inputText = undefined; // chat box text input
   // Events
   $scope.sendMessage = undefined; // Send message clicked
+  $scope.keyup = undefined;  // Detect submit via Enter key on textarea
+  $scope.snoozeVideo = undefined; // Let go of Webcam for a little while
 
   // Internal / status / private variables
   var stream;  // Webcam stream
@@ -19,6 +21,8 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
   var canvas = $('#self')[0];  // canvas on which snapshots are being drawn
   var participantMap = {};  // Map of participants, keyed by ID
     // each participant entry will have fields 'image', 'timestamp'
+
+  var snoozed = false;
 
   $scope.participants = function() {
     ret = [];
@@ -32,11 +36,8 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
    * Triggered by clicking on the 'send' button
    */
   $scope.sendMessage = function() {
-    console.log('will send message: ' + $scope.inputText);
-
     // Gather webcamshot to send with message
     var URL = canvas.toDataURL();
-    console.log('image is now: ' + URL);
 
     // Emit message through socket.io
     var msg = {
@@ -54,6 +55,40 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
     if(ev && ev.keyCode == 13) {
       $scope.sendMessage();
       $('textarea').val('');
+    }
+  };
+
+  /**
+   * Release the camera for some time and then automatically try to
+   * grab it again
+   */
+  $scope.snoozeVideo = function() {
+    var releaseTime = 10000;
+    var retryInterval = 2000;
+
+    // Tries to regain control of the Webcam. Keeps retrying.
+    // TODO: Generalize with startWebcam below
+    function tryWebcam() {
+      getUserMedia({ video: true },
+        function(localStream) {
+          stream = localStream;
+          attachMediaStream($('video')[0], stream);
+          snoozed = false;
+        }, function(err) {
+          setTimeout(tryWebcam, retryInterval);
+        });
+    }
+    if(stream) {
+      snoozed = true;
+      // Release Webcam
+      stream.stop();
+
+      // Add snooze icon over person's image
+      // TODO: Calculate position based on canvas and icon size
+      canvas.getContext('2d').drawImage($('#snooze')[0], 20, 5);
+
+      // Regain Webcam after snooze interval
+      setTimeout(tryWebcam, releaseTime);
     }
   };
 
@@ -88,6 +123,7 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
         $scope.status = 'Got user media';
         $scope.$digest();
         stream = localStream;
+        attachMediaStream($('video')[0], stream);
         startSnapshots();
         startSocketIO();
       }, function(err) {
@@ -115,7 +151,6 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
       $scope.$digest();
     });
     socket.on('update', function(msg) {
-      console.log('got update');
       if(!(msg.id in participantMap)) {
         participantMap[msg.id] = {};
       }
@@ -140,8 +175,12 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
   function startSnapshots() {
     var context = canvas.getContext('2d');
     var video = $('video')[0];
-    attachMediaStream(video, stream);
     setInterval(function() {
+      // Avoid redrawing if we're in snooze mode so we don't overwrite
+      // the cute snooze icon
+      if(snoozed) {
+        return;
+      }
       var crop = 25;
       context.drawImage(video, 160, 120, 360, 240,
                        0, 0, canvas.clientWidth, canvas.clientHeight);

@@ -6,6 +6,8 @@ block location
   a(class='navbar-brand') - Creativa 77
 
 block content
+  img(src='/img/snooze.png',id='snooze',style='display:none')
+  video(autoplay,style='display:none',width='640',height='480')
   div(class='row',ng-controller='WebcamControl')
     div(class='col-md-9')
       table(class='table table-condensed table-bordered')
@@ -27,7 +29,7 @@ block content
       div Status: {{ status }}
       canvas(id='self',width='70',height='50')
       canvas(id='copy',width='70',height='50')
+      button(class='btn btn-default',ng-click='snoozeVideo()') Snooze
       form(ng-submit='sendMessage()')
         textarea(class='form-control',ng-model='inputText',ng-keyup='keyup($event)')
         button(class='btn btn-default') Send
-      video(autoplay,style='display:none',width='640',height='480')
