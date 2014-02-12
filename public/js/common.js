@@ -45,6 +45,7 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
       text: $scope.inputText,
       image: URL
     };
+    $('textarea').val('');
     socket.emit('message', msg);
 
     // Add it to the list locally
@@ -54,7 +55,6 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
   $scope.keyup = function(ev) {
     if(ev && ev.keyCode == 13) {
       $scope.sendMessage();
-      $('textarea').val('');
     }
   };
 
