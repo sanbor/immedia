@@ -46,6 +46,7 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
       image: URL
     };
     $('textarea').val('');
+    $scope.inputText = "";
     socket.emit('message', msg);
 
     // Add it to the list locally
