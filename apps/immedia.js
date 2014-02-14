@@ -31,7 +31,7 @@ module.exports = function(app, io) {
         if(handshakeData.query.password && handshakeData.query.password == room.password) {
           callback(null, true);
         } else {
-          callback("Wrong room password", false);
+          callback("Wrong room password. " + handshakeData.query.password + " vs " + room.password, false);
         }
       });
     }
