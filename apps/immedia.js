@@ -10,7 +10,6 @@ module.exports = function(app, io) {
   app.get('/r/:room_name', function(req, res) {
     var roomName = req.params.room_name;
     var roomPassword = req.query.password || false;
-    console.log('got request for room ' + roomName + ', password ' + roomPassword);
     if(!(roomName in rooms)) {
       console.log('creating room "' + roomName + '"' + (roomPassword ? ' with password.' : ''));
       var newRoom = {
@@ -31,7 +30,8 @@ module.exports = function(app, io) {
         if(handshakeData.query.password && handshakeData.query.password == room.password) {
           callback(null, true);
         } else {
-          callback("Wrong room password. " + handshakeData.query.password + " vs " + room.password, false);
+          callback("Wrong room password", false);
+          // callback("Wrong room password. " + handshakeData.query.password + " vs " + room.password, false);
         }
       });
     }
