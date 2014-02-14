@@ -1,4 +1,4 @@
-#!/bin/env node
+#!/usr/bin/env node
 /**
  * This is the main server entry point. In here we do general environment configuration
  * but not much more. The rest (main application logic) we separate in individual

@@ -5,15 +5,18 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
   // --------------------------------------------------------
   // Display
   $scope.status = 'Starting'
-  $scope.messages = [];  // Messages rendered in chat list
-  $scope.when = undefined; // Displays timestamp using moment.js
-  $scope.participants = undefined; // List of people active in the chat
+  $scope.messages = [];             // Messages rendered in chat list
+  $scope.when = undefined;          // Displays timestamp using moment.js
+  $scope.participants = undefined;  // List of people active in the chat
+  $scope.isError = false;           // There was an error, show retry button
   // Input
-  $scope.inputText = undefined; // chat box text input
+  $scope.inputText = undefined;     // chat box text input
+  $scope.roomPassword = undefined;  // input for room password
   // Events
-  $scope.sendMessage = undefined; // Send message clicked
-  $scope.keyup = undefined;  // Detect submit via Enter key on textarea
-  $scope.snoozeVideo = undefined; // Let go of Webcam for a little while
+  $scope.connect = undefined;       // Try connecting again
+  $scope.sendMessage = undefined;   // Send message clicked
+  $scope.keyup = undefined;         // Detect submit via Enter key on textarea
+  $scope.snoozeVideo = undefined;   // Let go of Webcam for a little while
 
   // Internal / status / private variables
   var stream;  // Webcam stream
@@ -21,6 +24,8 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
   var canvas = $('#self')[0];  // canvas on which snapshots are being drawn
   var participantMap = {};  // Map of participants, keyed by ID
     // each participant entry will have fields 'image', 'timestamp'
+  var snapshotIntervalId;
+  var socketioIntervalId;  // Timer to send snapshot image / keepalive to the room
 
   var snoozed = false;
 
@@ -93,6 +98,14 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
     }
   };
 
+  /**
+   * Manually connect. User clicked 'connect' button
+   */
+  $scope.connect = function() {
+    console.log('connect');
+    startSocketIO();
+  };
+
   $scope.when = function(timestamp) {
     return moment(timestamp).fromNow();
   };
@@ -137,14 +150,27 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
     var ix = window.location.href.lastIndexOf('/');
     var roomName = window.location.href.substring(ix);
 
-    // socket = io.connect('/facechat');
-    socket = io.connect(roomName);
+    if(!$.isEmptyObject(io.sockets)) {
+      // JAC: what a horrible hack
+      io.sockets = {};
+    }
+
+    if($scope.roomPassword) {
+      socket = io.connect(roomName, { query: 'password=' + $scope.roomPassword });
+    } else {
+      socket = io.connect(roomName);
+    }
+    var s = socket.socket;
     socket.on('connect', function() {
+      startRoomInterval(socket);
       $scope.status = 'Socket.IO connected';
+      $scope.isError = false;
       $scope.$digest();
     });
-    socket.on('ready', function() {
-      $scope.status = 'Socket.IO ready';
+    socket.on('error', function(reason) {
+      stopRoomInterval(socket);
+      $scope.status = 'Socket.IO error: ' + reason;
+      $scope.isError = true;
       $scope.$digest();
     });
     socket.on('message', function(msg) {
@@ -165,7 +191,11 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
       }
       $scope.$digest();
     });
-    setInterval(function() {
+  }
+
+  function startRoomInterval(socket) {
+    stopRoomInterval();
+    socketioIntervalId = setInterval(function() {
       socket.emit('update',{
         image: canvas.toDataURL(),
         timestamp: new Date().getTime()
@@ -173,10 +203,18 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
     }, 5000);
   }
 
+  function stopRoomInterval() {
+    if(socketioIntervalId) {
+      clearInterval(socketioIntervalId);
+      socketioIntervalId = false;
+    }
+  }
+
   function startSnapshots() {
     var context = canvas.getContext('2d');
     var video = $('video')[0];
-    setInterval(function() {
+    stopSnapshots();
+    snapshotIntervalId = setInterval(function() {
       // Avoid redrawing if we're in snooze mode so we don't overwrite
       // the cute snooze icon
       if(snoozed) {
@@ -188,6 +226,12 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
       $('#copy')[0].getContext('2d').drawImage(video, 0, 0,
                        canvas.clientWidth, canvas.clientHeight);
     }, 1000);
+  }
+  function stopSnapshots() {
+    if(snapshotIntervalId) {
+      clearInterval(snapshotIntervalId);
+      snapshotIntervalId = false;
+    }
   }
 
   startWebcam();
