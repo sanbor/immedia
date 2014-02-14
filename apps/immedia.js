@@ -9,28 +9,44 @@ module.exports = function(app, io) {
   });
   app.get('/r/:room_name', function(req, res) {
     var roomName = req.params.room_name;
+    var roomPassword = req.query.password || false;
     if(!(roomName in rooms)) {
-      startRoom(roomName);
-      rooms[roomName] = true;
+      console.log('creating room "' + roomName + '"' + (roomPassword ? ' with password.' : ''));
+      var newRoom = {
+        name: roomName,
+        password: roomPassword
+      };
+      startRoom(newRoom);
+      rooms[roomName] = newRoom;
     }
     res.render('immedia/main');
   });
 
-  function startRoom(roomName) {
-    console.log('creating namespace: ' + roomName);
-    io.of('/'+roomName).
-      on('connection', function(socket) {
-        socket.on('message', function(msg) {
-          console.log('Message through. Image size = ', msg && msg.image && msg.image.length);
-          socket.broadcast.emit('message', msg);
-        });
-        socket.on('update', function(msg) {
-          msg.id = socket.id;
-          socket.broadcast.emit('update', msg);
-        });
-        socket.on('disconnect', function() {
-          socket.broadcast.emit('exit', { id: socket.id });
-        });
+  function startRoom(room) {
+    var o = io.of('/'+room.name);
+    if(room.password) {
+      o = o.authorization(function (handshakeData, callback) {
+        console.dir(handshakeData);
+        if(handshakeData.query.password && handshakeData.query.password == room.password) {
+          callback(null, true);
+        } else {
+          callback("Wrong room password", false);
+          // callback("Wrong room password. " + handshakeData.query.password + " vs " + room.password, false);
+        }
       });
+    }
+    o.on('connection', function(socket) {
+      socket.on('message', function(msg) {
+        console.log('Message through. Image size = ', msg && msg.image && msg.image.length);
+        socket.broadcast.emit('message', msg);
+      });
+      socket.on('update', function(msg) {
+        msg.id = socket.id;
+        socket.broadcast.emit('update', msg);
+      });
+      socket.on('disconnect', function() {
+        socket.broadcast.emit('exit', { id: socket.id });
+      });
+    });
   }
 }

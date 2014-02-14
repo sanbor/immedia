@@ -27,6 +27,11 @@ block content
             div(ng-bind-html='setHtmlToTrusted(message.text)')
     div(class='col-md-3')
       div Status: {{ status }}
+      div(ng-show='isError')
+        form(ng-submit='connect()')
+          label(for='room-password') Room password:
+          input(class='form-control',id='room-password',type='password',ng-model='roomPassword')
+          button(class='btn btn-default') Connect
       canvas(id='self',width='70',height='50')
       canvas(id='copy',width='70',height='50')
       button(class='btn btn-default',ng-click='snoozeVideo()') Snooze
