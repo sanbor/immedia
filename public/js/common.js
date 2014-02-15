@@ -55,7 +55,7 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
     socket.emit('message', msg);
 
     // Add it to the list locally
-    addMessage(msg);
+    addMessage(msg, true);
   }
   // Hack to get the thing to also submit when you press Enter on the textarea
   $scope.keyup = function(ev) {
@@ -119,7 +119,7 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
    * Adds the message to the data model (which is in turn automatically rendered
    * through Angular.js bindings)
    */
-  function addMessage(msg) {
+  function addMessage(msg, sendByCurrentUser) {
     // Insert the new message to the top of the list of messages
     $scope.messages.splice(0, 0, msg);
     // Crop the list of in-memory (and rendered) messages to a fixed maximum size
@@ -127,6 +127,26 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
     if($scope.messages.length > max_rows) {
       $scope.messages.splice(max_rows,$scope.messages.length - max_rows);
     }
+
+    if(!sendByCurrentUser) {
+      var alarmId = getRandomInt(1,100);
+
+      if(alarmId <70) {
+        var audio = new Audio('/audio/audio1.mp3');
+      } else if (alarmId <85) {
+        var audio = new Audio('/audio/audio2.mp3');
+      } else if (alarmId <95) {
+        var audio = new Audio('/audio/audio3.mp3');
+      } else {
+        var audio = new Audio('/audio/audio4.mp3');
+      }
+
+      audio.play();
+    }
+  }
+
+  function getRandomInt (min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
   function startWebcam() {
@@ -174,7 +194,7 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
       $scope.$digest();
     });
     socket.on('message', function(msg) {
-      addMessage(msg);
+      addMessage(msg, false);
       $scope.$digest();
     });
     socket.on('update', function(msg) {
