@@ -127,6 +127,24 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
     if($scope.messages.length > max_rows) {
       $scope.messages.splice(max_rows,$scope.messages.length - max_rows);
     }
+
+    var alarmId = getRandomInt(1,100);
+
+    if(alarmId <70) {
+      var audio = new Audio('/audio/audio1.mp3');
+    } else if (alarmId <85) {
+      var audio = new Audio('/audio/audio2.mp3');
+    } else if (alarmId <95) {
+      var audio = new Audio('/audio/audio3.mp3');
+    } else {
+      var audio = new Audio('/audio/audio4.mp3');
+    }
+
+    audio.play();
+  }
+
+  function getRandomInt (min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
   function startWebcam() {
