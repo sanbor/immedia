@@ -29,6 +29,8 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
 
   var snoozed = false;
 
+  var alertMode = "quiet";
+
   $scope.participants = function() {
     ret = [];
     for(var id in participantMap) {
@@ -62,6 +64,13 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
     if(ev && ev.keyCode == 13) {
       $scope.sendMessage();
     }
+  };
+
+    /**
+   * Triggered by clicking on the different alert modes
+   */
+  $scope.setAlertMode = function(mode) {
+    alertMode = mode;
   };
 
   /**
@@ -128,17 +137,21 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
       $scope.messages.splice(max_rows,$scope.messages.length - max_rows);
     }
 
-    if(!sendByCurrentUser) {
-      var alarmId = getRandomInt(1,100);
-
-      if(alarmId <70) {
-        var audio = new Audio('/audio/audio1.mp3');
-      } else if (alarmId <85) {
-        var audio = new Audio('/audio/audio2.mp3');
-      } else if (alarmId <95) {
-        var audio = new Audio('/audio/audio3.mp3');
+    if(alertMode != "silent" && !sendByCurrentUser) {
+      if(alertMode == "quiet") {
+        var audio = new Audio('/audio/quiet.mp3');
       } else {
-        var audio = new Audio('/audio/audio4.mp3');
+        var alarmId = getRandomInt(1,100);
+
+        if(alarmId <70) {
+          var audio = new Audio('/audio/audio1.mp3');
+        } else if (alarmId <85) {
+          var audio = new Audio('/audio/audio2.mp3');
+        } else if (alarmId <95) {
+          var audio = new Audio('/audio/audio3.mp3');
+        } else {
+          var audio = new Audio('/audio/audio4.mp3');
+        }
       }
 
       audio.play();

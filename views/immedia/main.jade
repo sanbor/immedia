@@ -34,7 +34,17 @@ block content
           button(class='btn btn-default') Connect
       canvas(id='self',width='70',height='50')
       canvas(id='copy',width='70',height='50')
-      button(class='btn btn-default',ng-click='snoozeVideo()') Snooze
+      button(class='btn btn-warning',ng-click='snoozeVideo()') Snooze
       form(ng-submit='sendMessage()')
         textarea(class='form-control',ng-model='inputText',ng-keyup='keyup($event)')
-        button(class='btn btn-default') Send
+        button(class='btn btn-success') Send
+      div(class='btn-group')
+        button(data-toggle="dropdown" class='btn btn-primary dropdown-toggle') Alert settings
+          span(class='caret')
+        ul(class='dropdown-menu')
+          li
+            a(href='#',ng-click='setAlertMode("silent")') Silent mode
+          li
+            a(href='#',ng-click='setAlertMode("quiet")') Quiet mode
+          li
+            a(href='#',ng-click='setAlertMode("funny")') Funny mode
