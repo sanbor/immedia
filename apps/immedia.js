@@ -4,6 +4,8 @@ var models = require('./../models');
  * Immedia: office + remote awareness tool, inspired by Sqwiggle
  */
 module.exports = function(app, io) {
+  // Keep track of which rooms have already open for socket.io
+  var startedRooms = {};
 
   app.get('/', function(req, res) {
     res.redirect('/r/default');
@@ -26,7 +28,11 @@ module.exports = function(app, io) {
       } else {
         room = results[0];
       }
-      startRoom(room);
+      if(!(room.name in startedRooms)) {
+        console.log('Starting room ' + room.name);
+        startRoom(room);
+        startedRooms[room.name] = true;
+      }
       res.render('immedia/main');
     });
   });
