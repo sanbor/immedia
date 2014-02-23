@@ -1,3 +1,5 @@
+var models = require('./../models');
+
 /****
  * Immedia: office + remote awareness tool, inspired by Sqwiggle
  */
@@ -5,7 +7,8 @@ module.exports = function(app, io) {
 
   var rooms = {};
   app.get('/', function(req, res) {
-    res.redirect('/r/default');
+    // res.redirect('/r/default');
+    console.log('models!', models);
   });
   app.get('/r/:room_name', function(req, res) {
     var roomName = req.params.room_name;
