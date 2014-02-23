@@ -6,10 +6,11 @@
  */
 
 
-var express = require('express')
-  , http = require('http')
-  , socketio = require('socket.io')
-  , path = require('path');
+var express = require('express'),
+  http = require('http'),
+  socketio = require('socket.io'),
+  path = require('path'),
+  mongoose = require('mongoose');
 
 // Initialize express and Socket.IO
 var app = express();
@@ -34,6 +35,12 @@ app.use(express.methodOverride());
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Configure mongoose
+var uristring =
+  process.env.MONGOLAB_URI ||
+  process.env.MONGOHQ_URL ||
+  'mongodb://localhost/immedia';
+
 // Error handler for development environment only
 if ('development' == app.get('env')) {
   app.use(express.errorHandler());
@@ -42,6 +49,12 @@ if ('development' == app.get('env')) {
 // Start listening
 server.listen(app.get('port'), app.get('ipaddress'), function(){
   console.log('Express server listening on port ' + app.get('port'));
+});
+
+// Connect to mongoose
+mongoose.connect(uristring, function(err, res) {
+  if(err) console.error('Error connecting to MongoDB on ' + uristring + ': ' + err);
+  else    console.log('Connected to MongoDB on ' + uristring);
 });
 
 // Application entry points

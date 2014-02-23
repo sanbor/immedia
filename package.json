@@ -10,27 +10,25 @@
   "author": {
     "name": "Tessa Lau",
     "email": "tlau@tlau.org",
-    "url":  "http://tlau.org"
+    "url": "http://tlau.org"
   },
   "homepage": "http://tlau.org/",
   "repository": {
     "type": "git",
     "url": "https://gitub.com/openshift/origin-server"
   },
-
   "engines": {
     "node": ">= 0.8.0",
     "npm": ">= 1.0.0"
   },
-
   "dependencies": {
     "express": "3.2.x",
     "socket.io": "0.9.x",
-    "jade": "*"
+    "jade": "*",
+    "mongoose": "~3.8.7"
   },
   "devDependencies": {},
   "bundleDependencies": [],
-
   "private": true,
   "main": "server.js"
 }
