@@ -32,18 +32,8 @@ app.use(express.favicon());
 app.use(express.logger('dev'));
 app.use(express.bodyParser());
 app.use(express.methodOverride());
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(function(req, res, next) {
-  console.log('middlewhere working. Env: ' + app.get('env'));
-  if('development' != app.get('env') && !req.secure) {
-    console.log('redirectring');
-    res.redirect('https://immedia.herokuapp.com' + req.url);
-  } else {
-    console.log('accepting');
-    next();
-  }
-});
 app.use(app.router);
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Configure mongoose
 var uristring =
