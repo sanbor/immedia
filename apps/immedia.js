@@ -5,36 +5,41 @@ var models = require('./../models');
  */
 module.exports = function(app, io) {
 
-  var rooms = {};
   app.get('/', function(req, res) {
-    // res.redirect('/r/default');
-    console.log('models!', models);
+    res.redirect('/r/default');
   });
   app.get('/r/:room_name', function(req, res) {
     var roomName = req.params.room_name;
     var roomPassword = req.query.password || false;
-    if(!(roomName in rooms)) {
-      console.log('creating room "' + roomName + '"' + (roomPassword ? ' with password.' : ''));
-      var newRoom = {
-        name: roomName,
-        password: roomPassword
-      };
-      startRoom(newRoom);
-      rooms[roomName] = newRoom;
-    }
-    res.render('immedia/main');
+    models.Room.find({ name: roomName }).exec(function(err, results) {
+      // TODO: Error handling
+      var room;
+      if(results.length == 0) {
+        console.log('creating room "' + roomName + '"' + (roomPassword ? ' with password.' : ''));
+        var room = new models.Room({
+          name: roomName
+        });
+        if(roomPassword) {
+          room.password = roomPassword;
+        }
+        room.save();
+      } else {
+        room = results[0];
+      }
+      startRoom(room);
+      res.render('immedia/main');
+    });
   });
 
   function startRoom(room) {
     var o = io.of('/'+room.name);
     if(room.password) {
       o = o.authorization(function (handshakeData, callback) {
-        console.dir(handshakeData);
         if(handshakeData.query.password && handshakeData.query.password == room.password) {
           callback(null, true);
+          console.log('User admitted into protected room: ' + room.name);
         } else {
           callback("Wrong room password", false);
-          // callback("Wrong room password. " + handshakeData.query.password + " vs " + room.password, false);
         }
       });
     }

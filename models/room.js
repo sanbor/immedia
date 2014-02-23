@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
-var Room = module.exports = new mongoose.Schema({
+var roomSchema= new mongoose.Schema({
   name: String,
   password: String
 });
+var Room = module.exports = mongoose.model('Room', roomSchema);
