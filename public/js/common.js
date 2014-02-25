@@ -200,6 +200,13 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
       $scope.isError = false;
       $scope.$digest();
     });
+    // Receives updates of old messages from the server
+    // TODO: Better idea: have client request messages newer
+    // than the latest one it has (or all if it has none)
+    socket.on('messages', function(messages) {
+      $scope.messages = messages;
+      $scope.$digest();
+    });
     socket.on('error', function(reason) {
       stopRoomInterval(socket);
       $scope.status = 'Socket.IO error: ' + reason;

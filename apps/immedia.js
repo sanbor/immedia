@@ -56,10 +56,27 @@ module.exports = function(app, io) {
       });
     }
     o.on('connection', function(socket) {
+      // Emit older messages for this room
+      // TODO: Limit how many messages are being sent
+      models.Message.find({ roomId: room._id }, { roomId: 0 }).exec(function(err, result) {
+        if(err) console.error('Error looking for old messges in room ' + room.name);
+        else {
+          socket.emit('messages', result);
+        }
+      });
+
+      // Received when a participant sends a messages
       socket.on('message', function(msg) {
         console.log('Message through. Image size = ', msg && msg.image && msg.image.length);
+        // Broadcast the message to the rest of the participants
         socket.broadcast.emit('message', msg);
+        // Store the message in persistent storage
+        var messageObject = new models.Message(msg);
+        messageObject.roomId = room._id;
+        messageObject.save();
+        // TODO: Cap the maximum number of messages stored
       });
+
       socket.on('update', function(msg) {
         msg.id = socket.id;
         socket.broadcast.emit('update', msg);
