@@ -1,4 +1,10 @@
 var models = require('./../models');
+var crypto = require('crypto');
+
+// Shortcut for producint an MD5 hash out of a password string
+function hash(password) {
+  return crypto.createHash('md5').update(password).digest('hex');
+}
 
 /****
  * Immedia: office + remote awareness tool, inspired by Sqwiggle
@@ -22,7 +28,7 @@ module.exports = function(app, io) {
           name: roomName
         });
         if(roomPassword) {
-          room.password = roomPassword;
+          room.password = hash(roomPassword);
         }
         room.save();
       } else {
@@ -41,7 +47,7 @@ module.exports = function(app, io) {
     var o = io.of('/'+room.name);
     if(room.password) {
       o = o.authorization(function (handshakeData, callback) {
-        if(handshakeData.query.password && handshakeData.query.password == room.password) {
+        if(handshakeData.query.password && hash(handshakeData.query.password) == room.password) {
           callback(null, true);
           console.log('User admitted into protected room: ' + room.name);
         } else {
