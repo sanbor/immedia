@@ -111,7 +111,6 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
    * Manually connect. User clicked 'connect' button
    */
   $scope.connect = function() {
-    console.log('connect');
     startSocketIO();
   };
 
@@ -194,17 +193,30 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
       socket = io.connect(roomName);
     }
     var s = socket.socket;
+    function requestMessages() {
+      var params = {};
+      if($scope.messages && $scope.messages.length > 0) {
+        params.newerThan = $scope.messages[0].timestamp;
+      }
+      socket.emit('request-messages', params);
+    }
     socket.on('connect', function() {
       startRoomInterval(socket);
       $scope.status = 'Socket.IO connected';
       $scope.isError = false;
       $scope.$digest();
+      requestMessages();
+    });
+    socket.on('reconnect', function() {
+      requestMessages();
     });
     // Receives updates of old messages from the server
     // TODO: Better idea: have client request messages newer
     // than the latest one it has (or all if it has none)
     socket.on('messages', function(messages) {
-      $scope.messages = messages;
+      messages.forEach(function(message){ 
+        addMessage(message, true);
+      });
       $scope.$digest();
     });
     socket.on('error', function(reason) {

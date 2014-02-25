@@ -56,13 +56,22 @@ module.exports = function(app, io) {
       });
     }
     o.on('connection', function(socket) {
-      // Emit older messages for this room
+      // Upon client request, emit older messages for this room
+      // params: {
+      //   newerThan: timestamp   // Only fetch messages newer than this
+      // }
       // TODO: Limit how many messages are being sent
-      models.Message.find({ roomId: room._id }, { roomId: 0 }).exec(function(err, result) {
-        if(err) console.error('Error looking for old messges in room ' + room.name);
-        else {
-          socket.emit('messages', result);
+      socket.on('request-messages', function(params) {
+        var query = models.Message.find({ roomId: room._id }, { roomId: 0 });
+        if(params && 'newerThan' in params) {
+          query = query.find({ timestamp: { $gt: params.newerThan }});
         }
+        query.exec(function(err, result) {
+          if(err) console.error('Error looking for old messges in room ' + room.name);
+          else {
+            socket.emit('messages', result);
+          }
+        });
       });
 
       // Received when a participant sends a messages
