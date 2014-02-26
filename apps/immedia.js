@@ -60,13 +60,15 @@ module.exports = function(app, io) {
       // params: {
       //   newerThan: timestamp   // Only fetch messages newer than this
       // }
-      // TODO: Limit how many messages are being sent
       socket.on('request-messages', function(params) {
         var query = models.Message.find({ roomId: room._id }, { roomId: 0 });
         if(params && 'newerThan' in params) {
           query = query.find({ timestamp: { $gt: params.newerThan }});
         }
-        query.exec(function(err, result) {
+        query.
+          limit(40).    // Don't return more than 40 messages to the client. It will only render
+                        // these many anyway
+          exec(function(err, result) {
           if(err) console.error('Error looking for old messges in room ' + room.name);
           else {
             socket.emit('messages', result);
@@ -83,7 +85,8 @@ module.exports = function(app, io) {
         var messageObject = new models.Message(msg);
         messageObject.roomId = room._id;
         messageObject.save();
-        // TODO: Cap the maximum number of messages stored
+        // Cap the maximum number of messages stored
+        purgeMessages(room);
       });
 
       socket.on('update', function(msg) {
@@ -94,5 +97,14 @@ module.exports = function(app, io) {
         socket.broadcast.emit('exit', { id: socket.id });
       });
     });
+  }
+
+  // Deletes from the database any messages older than allowed by the room configuration
+  function purgeMessages(room) {
+    var oldestTimestampAllowed = new Date().getTime() - room.max_message_age;
+    models.Message.remove({ roomId: room._id, timestamp: { $lt: oldestTimestampAllowed }},
+      function(err) {
+        if(err) console.error('Error trimming documents for room ' + room.name + ':', err);
+      });
   }
 }
