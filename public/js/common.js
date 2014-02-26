@@ -57,7 +57,7 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
     socket.emit('message', msg);
 
     // Add it to the list locally
-    addMessage(msg, true);
+    addMessages([msg], true);
   }
   // Hack to get the thing to also submit when you press Enter on the textarea
   $scope.keyup = function(ev) {
@@ -127,9 +127,9 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
    * Adds the message to the data model (which is in turn automatically rendered
    * through Angular.js bindings)
    */
-  function addMessage(msg, sendByCurrentUser) {
+  function addMessages(msgs, sendByCurrentUser) {
     // Insert the new message to the top of the list of messages
-    $scope.messages.splice(0, 0, msg);
+    $scope.messages = msgs.concat($scope.messages);
     // Crop the list of in-memory (and rendered) messages to a fixed maximum size
     var max_rows = 40; // Max number of rows hardcoded here
     if($scope.messages.length > max_rows) {
@@ -214,9 +214,7 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
     // TODO: Better idea: have client request messages newer
     // than the latest one it has (or all if it has none)
     socket.on('messages', function(messages) {
-      messages.forEach(function(message){ 
-        addMessage(message, true);
-      });
+      addMessages(messages, true);
       $scope.$digest();
     });
     socket.on('error', function(reason) {
@@ -226,7 +224,7 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
       $scope.$digest();
     });
     socket.on('message', function(msg) {
-      addMessage(msg, false);
+      addMessages([msg], false);
       $scope.$digest();
     });
     socket.on('update', function(msg) {

@@ -66,6 +66,7 @@ module.exports = function(app, io) {
           query = query.find({ timestamp: { $gt: params.newerThan }});
         }
         query.
+          sort('-timestamp').
           limit(40).    // Don't return more than 40 messages to the client. It will only render
                         // these many anyway
           exec(function(err, result) {
