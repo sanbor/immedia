@@ -85,7 +85,8 @@ module.exports = function(app, io) {
         var messageObject = new models.Message(msg);
         messageObject.roomId = room._id;
         messageObject.save();
-        // TODO: Cap the maximum number of messages stored
+        // Cap the maximum number of messages stored
+        purgeMessages(room);
       });
 
       socket.on('update', function(msg) {
@@ -96,5 +97,14 @@ module.exports = function(app, io) {
         socket.broadcast.emit('exit', { id: socket.id });
       });
     });
+  }
+
+  // Deletes from the database any messages older than allowed by the room configuration
+  function purgeMessages(room) {
+    var oldestTimestampAllowed = new Date().getTime() - room.max_message_age;
+    models.Message.remove({ roomId: room._id, timestamp: { $lt: oldestTimestampAllowed }},
+      function(err) {
+        if(err) console.error('Error trimming documents for room ' + room.name + ':', err);
+      });
   }
 }
