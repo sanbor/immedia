@@ -78,7 +78,7 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
    * grab it again
    */
   $scope.snoozeVideo = function() {
-    var releaseTime = 10000;
+    var releaseTime = 20000;
     var retryInterval = 2000;
 
     // Tries to regain control of the Webcam. Keeps retrying.
