@@ -17,6 +17,14 @@ module.exports = function(app, io) {
     res.redirect('/r/default');
   });
   app.get('/r/:room_name', function(req, res) {
+    // When running on Heroku, always redirect HTTP requests to HTTPS so that we can remember
+    // webcam permission settings
+    if('production' == app.get('env')) {
+      if(req.headers['x-forwarded-proto'] != 'https') {
+        res.redirect('https://immedia.herokuapp.com' + req.url);
+      }
+    }
+
     var roomName = req.params.room_name;
     var roomPassword = req.query.password || false;
     models.Room.find({ name: roomName }).exec(function(err, results) {
