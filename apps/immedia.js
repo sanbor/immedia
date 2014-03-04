@@ -1,5 +1,6 @@
 var models = require('./../models');
 var crypto = require('crypto');
+var moniker = require('moniker');
 
 // Shortcut for producint an MD5 hash out of a password string
 function hash(password) {
@@ -14,7 +15,7 @@ module.exports = function(app, io) {
   var startedRooms = {};
 
   app.get('/', function(req, res) {
-    res.redirect('/r/default');
+    res.redirect('/r/' + moniker.choose());
   });
   app.get('/r/:room_name', function(req, res) {
     // When running on Heroku, always redirect HTTP requests to HTTPS so that we can remember
