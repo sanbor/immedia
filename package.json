@@ -25,7 +25,8 @@
     "express": "3.2.x",
     "socket.io": "0.9.x",
     "jade": "*",
-    "mongoose": "~3.8.7"
+    "mongoose": "~3.8.7",
+    "moniker": "~0.1.2"
   },
   "devDependencies": {},
   "bundleDependencies": [],
