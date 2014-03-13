@@ -10,7 +10,7 @@ block content
   video(autoplay,style='display:none',width='640',height='480')
   div(class='row',ng-controller='WebcamControl')
     div(class='col-md-9')
-      table(class='table table-condensed table-bordered')
+      table(class='table table-condensed table-bordered', ng-hide='noVideo')
         tr
           td(ng-repeat='participant in participants()')
             img(ng-src='{{ participant.image }}')
@@ -22,7 +22,7 @@ block content
         tr(ng-repeat='message in messages')
           td {{ when(message.timestamp) }}
           td
-            img(ng-src='{{ message.image }}')
+            img(ng-src='{{ message.image }}', ng-hide='noVideo')
           td
             div(ng-bind-html='setHtmlToTrusted(message.text)')
     div(class='col-md-3')
@@ -32,9 +32,13 @@ block content
           label(for='room-password') Room password:
           input(class='form-control',id='room-password',type='password',ng-model='roomPassword')
           button(class='btn btn-default') Connect
-      canvas(id='self',width='70',height='50')
-      canvas(id='copy',width='70',height='50')
-      button(class='btn btn-warning',ng-click='snoozeVideo()') Snooze
+      div
+        canvas(id='self',width='70',height='50', ng-hide='noVideo')
+        canvas(id='copy',width='70',height='50', ng-hide='noVideo')
+      div
+        button(class='btn btn-warning',ng-click='snoozeVideo()') Snooze
+        button(class='btn btn-danger',ng-click='killVideo()') Kill Video
+
       form(ng-submit='sendMessage()')
         textarea(class='form-control',ng-model='inputText',ng-keyup='keyup($event)')
         button(class='btn btn-success') Send

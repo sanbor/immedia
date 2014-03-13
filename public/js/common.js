@@ -9,6 +9,7 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
   $scope.when = undefined;          // Displays timestamp using moment.js
   $scope.participants = undefined;  // List of people active in the chat
   $scope.isError = false;           // There was an error, show retry button
+  $scope.noVideo = false;           // Hides others' videos if webcam is off
   // Input
   $scope.inputText = undefined;     // chat box text input
   $scope.roomPassword = undefined;  // input for room password
@@ -104,6 +105,18 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
 
       // Regain Webcam after snooze interval
       setTimeout(tryWebcam, releaseTime);
+    }
+  };
+
+  /**
+   * Releases the camera and hides other participant cameras.
+   */
+  $scope.killVideo = function() {
+    if(stream) {
+      stopSnapshots();
+      // Release Webcam
+      stream.stop();
+      $scope.noVideo = true;
     }
   };
 
