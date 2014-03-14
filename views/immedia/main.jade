@@ -1,20 +1,22 @@
 extends layout
 
-block head
-
-block location
-  a(class='navbar-brand') - Creativa 77
-
-block content
+block chat-participants
   img(src='/img/snooze.png',id='snooze',style='display:none')
   video(autoplay,style='display:none',width='640',height='480')
-  div(class='row',ng-controller='WebcamControl')
-    div(class='col-md-9')
-      table(class='table table-condensed table-bordered', ng-hide='noVideo')
-        tr
-          td(ng-repeat='participant in participants()')
-            img(ng-src='{{ participant.image }}')
-      table(class='table table-condensed table-bordered table-striped')
+
+  div(class='participants', ng-hide='noVideo')
+    div(class='participant')
+      canvas(id='self',width='70',height='50')
+      form(ng-submit='setMyNickname()')
+        input(id='myNickname', class='nickname', placeholder='No name',ng-model='myNickname')
+    div(class='participant', ng-repeat='participant in participants()')
+      img(ng-src='{{ participant.image }}')
+      form(ng-submit='setNickname()')
+        input(class='nickname', placeholder='No name',
+          ng-model="participant.nickname", value="{{participant.nickname}}", ng-disabled='hasNickname()')
+
+block chat-log
+      table(width='100%', class='table table-condensed table-bordered table-striped')
         tr
           th(width='100px') When
           th(width='70px') Who
@@ -22,27 +24,30 @@ block content
         tr(ng-repeat='message in messages')
           td {{ when(message.timestamp) }}
           td
-            img(ng-src='{{ message.image }}', ng-hide='noVideo')
+            img(ng-src='{{ message.image }}', ng-hide='noVideo',title='{{ message.nickname }}',alt='{{ message.nickname }}')
           td
             div(ng-bind-html='setHtmlToTrusted(message.text)')
-    div(class='col-md-3')
-      div Status: {{ status }}
-      div(ng-show='isError')
-        form(ng-submit='connect()')
-          label(for='room-password') Room password:
-          input(class='form-control',id='room-password',type='password',ng-model='roomPassword')
-          button(class='btn btn-default') Connect
-      div
-        canvas(id='self',width='70',height='50', ng-hide='noVideo')
-        canvas(id='copy',width='70',height='50', ng-hide='noVideo')
+
+block chat-input
+  canvas(id='copy',width='70',height='50')
+  div(class='')
+    div Status: {{ status }}
+    div(ng-show='isError')
+      form(ng-submit='connect()')
+        label(for='room-password') Room password:
+        input(class='form-control',id='room-password',type='password',ng-model='roomPassword')
+        button(class='btn btn-default') Connect
+
+    form(ng-submit='sendMessage()')
+      div(class='chat-box')
+        div(class='textarea-container')
+        textarea(class='form-control',ng-model='inputText',ng-keyup='keyup($event)')
+        button(class='btn btn-success') Send
+
       div
         button(class='btn btn-warning',ng-click='snoozeVideo()') Snooze
         button(class='btn btn-danger',ng-click='killVideo()') Kill Video
 
-      form(ng-submit='sendMessage()')
-        textarea(class='form-control',ng-model='inputText',ng-keyup='keyup($event)')
-        button(class='btn btn-success') Send
-      div(class='btn-group')
         button(data-toggle="dropdown",class='btn btn-primary dropdown-toggle') Alert settings
           span(class='caret')
         ul(class='dropdown-menu')

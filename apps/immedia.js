@@ -98,7 +98,10 @@ module.exports = function(app, io) {
         // Cap the maximum number of messages stored
         purgeMessages(room);
       });
-
+      socket.on('nickname', function(msg) {
+        msg.id = socket.id;
+        socket.broadcast.emit('nickname', msg);
+      });
       socket.on('update', function(msg) {
         msg.id = socket.id;
         socket.broadcast.emit('update', msg);

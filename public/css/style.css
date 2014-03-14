@@ -1,5 +1,6 @@
 body {
-  padding: 50px;
+  padding: 0;
+	margin: 0;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
@@ -7,12 +8,70 @@ a {
   color: #00B7FF;
 }
 
-video {
-  width: 100%;
+#copy {
+	visibility: hidden;
+	position: absolute;
 }
 
-#local-video {
-  position: absolute;
-  bottom: 20px;
-  width: 10%;
+#self {
+display: block;
 }
+
+.container {
+	position: relative;
+}
+
+.header {
+	top: 0px;
+	height: 100px;
+	position: absolute;
+	left: 0;
+	right: 0;
+}
+
+.chat-log {
+	top: 100px;
+	left: 0;
+	right: 0;
+	bottom: 200px;
+	position: absolute;
+	overflow: hidden;
+	overflow-y:scroll;
+}
+
+.chat-input {
+	left: 0;
+	right: 0;
+	bottom: 0px;
+	height: 200px;
+	position: absolute;
+}
+
+.participants .participant {
+	float: left;
+}
+.participants .participant .nickname {
+	display: block;
+	width: 70px;
+	border: 1px solid #ccc;
+}
+.chat-box {
+	position: relative;
+	width: 95%;
+	height: 50px;
+}
+.chat-box textarea {
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	display: block;
+	width: 95%;
+	}
+	.chat-box button{
+	position: absolute;
+	top: 0;
+	width: 50px;
+	right: 0;
+	bottom: 0;
+	}

@@ -18,6 +18,23 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
   $scope.sendMessage = undefined;   // Send message clicked
   $scope.keyup = undefined;         // Detect submit via Enter key on textarea
   $scope.snoozeVideo = undefined;   // Let go of Webcam for a little while
+  $scope.setMyNickname = function() {
+    socket.emit('update',{
+        image: canvas.toDataURL(),
+        timestamp: new Date().getTime(),
+        nickname: $scope.myNickname
+      }); 
+  };
+  $scope.hasNickname = function() {
+    return participantMap[this.participant.id].nicknameSet;
+  };
+  $scope.setNickname = function() {
+    socket.emit('nickname',{
+      participant: this.participant.id,
+      nickname: this.participant.nickname
+    });
+    participantMap[this.participant.id].nicknameSet = true;
+  };
 
   // Internal / status / private variables
   var stream;  // Webcam stream
@@ -31,11 +48,13 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
   var snoozed = false;
 
   var alertMode = "quiet";
-
   $scope.participants = function() {
-    ret = [];
+    var ret = [];
+    var i = 0;
     for(var id in participantMap) {
       ret.push(participantMap[id]);
+      ret[i].id = id;
+      i++;
     }
     return ret;
   };
@@ -51,7 +70,8 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
     var msg = {
       timestamp: new Date().getTime(),
       text: $scope.inputText,
-      image: URL
+      image: URL,
+      nickname: $scope.myNickname
     };
     $('textarea').val('');
     $scope.inputText = "";
@@ -240,12 +260,30 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
       addMessages([msg], false);
       $scope.$digest();
     });
+    socket.on('nickname', function(msg) {
+      console.log('someone is trying to set our nickname');
+      // When someone is trying to set our nickname
+      if (msg.participant === socket.socket.sessionid) {
+        if (!$scope.myNickname) {
+          $scope.myNickname = msg.nickname;
+        }
+      } else {
+        if (!participantMap[msg.participant].nickname) {
+          participantMap[msg.participant].nickname = msg.nickname;
+        }
+      }
+    });
     socket.on('update', function(msg) {
       if(!(msg.id in participantMap)) {
         participantMap[msg.id] = {};
       }
       participantMap[msg.id].image = msg.image;
       participantMap[msg.id].timestamp = msg.timestamp;
+      if (!angular.isUndefined(msg.nickname)) {
+        participantMap[msg.id].nicknameSet = true;
+        participantMap[msg.id].nickname = msg.nickname;
+      }
+      
       $scope.$digest();
     });
     socket.on('exit', function(msg) {
@@ -261,7 +299,8 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
     socketioIntervalId = setInterval(function() {
       socket.emit('update',{
         image: canvas.toDataURL(),
-        timestamp: new Date().getTime()
+        timestamp: new Date().getTime(),
+        nickname: $scope.myNickname
       });
     }, 5000);
   }
