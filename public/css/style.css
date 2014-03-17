@@ -1,7 +1,7 @@
 body {
-  padding: 0;
-	margin: 0;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
 }
 
 a {
@@ -9,69 +9,110 @@ a {
 }
 
 #copy {
-	visibility: hidden;
-	position: absolute;
+  position: absolute;
+  visibility: hidden;
 }
 
 #self {
-display: block;
+  display: block;
+  border-radius: 4px;
 }
 
 .container {
-	position: relative;
+  position: relative;
 }
 
 .header {
-	top: 0px;
-	height: 100px;
-	position: absolute;
-	left: 0;
-	right: 0;
+  height: 83px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0px;
 }
 
 .chat-log {
-	top: 100px;
-	left: 0;
-	right: 0;
-	bottom: 200px;
-	position: absolute;
-	overflow: hidden;
-	overflow-y:scroll;
+  bottom: 105px;
+  left: 0;
+  overflow: hidden;
+  overflow-y:scroll;
+  position: absolute;
+  right: 0;
+  top: 83px;
 }
 
 .chat-input {
-	left: 0;
-	right: 0;
-	bottom: 0px;
-	height: 200px;
-	position: absolute;
+  bottom: 0px;
+  height: 105px;
+  left: 0;
+  position: absolute;
+  right: 0;
 }
 
 .participants .participant {
-	float: left;
+  float: left;
+  margin: 3px;
 }
+
 .participants .participant .nickname {
-	display: block;
-	width: 70px;
-	border: 1px solid #ccc;
+  border: none;
+  display: block;
+  padding: 3px;
+  padding-top: 4px;
+  width: 70px;
+  height: 25px;
+  border: 1px solid #ccc;
+  background: #f9f9f9;
+  font-size: 12px;
+  border-radius: 4px;
+  margin-top: 2px;
 }
+
+.participants .participant #myNickname {
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.participants .participant .nickname:hover {
+  border: 1px solid #ccc;
+  background: #fdfdfd;
+}
+
+.participants .participant .nickname:focus {
+  border: 1px solid #111;
+  color: #666;
+  background: #fff;
+}
+
+.participants .participant .nickname:disabled {
+  background: #fff;
+  border: #fff;
+  text-align: center;
+}
+
 .chat-box {
-	position: relative;
-	width: 95%;
-	height: 50px;
+  height: 50px;
+  position: relative;
+  width: 100%;
 }
-.chat-box textarea {
-	position: absolute;
-	top: 0;
-	left: 0;
-	bottom: 0;
-	display: block;
-	width: 95%;
-	}
-	.chat-box button{
-	position: absolute;
-	top: 0;
-	width: 50px;
-	right: 0;
-	bottom: 0;
-	}
+
+.chat-box .textarea-container {
+  height: 50px;
+  left: 0;
+  position: absolute;
+  right: 60px;
+}
+
+.chat-box .textarea-container textarea {
+  height: 50px;
+  width: 100%;
+  border-radius: 0;
+}
+
+.chat-box button{
+  bottom: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 60px;
+  border-radius: 0;
+}

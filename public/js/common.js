@@ -18,23 +18,6 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
   $scope.sendMessage = undefined;   // Send message clicked
   $scope.keyup = undefined;         // Detect submit via Enter key on textarea
   $scope.snoozeVideo = undefined;   // Let go of Webcam for a little while
-  $scope.setMyNickname = function() {
-    socket.emit('update',{
-        image: canvas.toDataURL(),
-        timestamp: new Date().getTime(),
-        nickname: $scope.myNickname
-      }); 
-  };
-  $scope.hasNickname = function() {
-    return participantMap[this.participant.id].nicknameSet;
-  };
-  $scope.setNickname = function() {
-    socket.emit('nickname',{
-      participant: this.participant.id,
-      nickname: this.participant.nickname
-    });
-    participantMap[this.participant.id].nicknameSet = true;
-  };
 
   // Internal / status / private variables
   var stream;  // Webcam stream
@@ -128,6 +111,37 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
     }
   };
 
+  /**
+   * Focuses the chat input element after .3 second
+   */
+  var focusChatInputEl = function() {
+    setTimeout(function() {
+      $('#chat-input-element').focus();
+    }, 300);
+  };
+
+  $scope.setMyNickname = function() {
+    socket.emit('update',{
+        image: canvas.toDataURL(),
+        timestamp: new Date().getTime(),
+        nickname: $scope.myNickname
+      });
+    focusChatInputEl();
+  };
+
+  $scope.hasNickname = function() {
+    return participantMap[this.participant.id].nicknameSet;
+  };
+
+  $scope.setNickname = function() {
+    socket.emit('nickname',{
+      participant: this.participant.id,
+      nickname: this.participant.nickname
+    });
+    participantMap[this.participant.id].nicknameSet = true;
+    $('#chat-input-element').focus();
+  };
+  
   /**
    * Releases the camera and hides other participant cameras.
    */
@@ -328,6 +342,7 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
       $('#copy')[0].getContext('2d').drawImage(video, 0, 0,
                        canvas.clientWidth, canvas.clientHeight);
     }, 1000);
+    $('#myNickname').show();
   }
   function stopSnapshots() {
     if(snapshotIntervalId) {

@@ -1,16 +1,16 @@
 extends layout
 
 block chat-participants
-  img(src='/img/snooze.png',id='snooze',style='display:none')
-  video(autoplay,style='display:none',width='640',height='480')
+  img(src='/img/snooze.png', id='snooze', style='display:none')
+  video(autoplay,style='display:none', width='640',height='480')
 
-  div(class='participants', ng-hide='noVideo')
+  div(class='participants')
     div(class='participant')
-      canvas(id='self',width='70',height='50')
+      canvas(id='self',width='70',height='50', ng-hide='noVideo')
       form(ng-submit='setMyNickname()')
-        input(id='myNickname', class='nickname', placeholder='No name',ng-model='myNickname')
+        input(id='myNickname', class='nickname', placeholder='No name', ng-model='myNickname', style='display:none')
     div(class='participant', ng-repeat='participant in participants()')
-      img(ng-src='{{ participant.image }}')
+      img(ng-src='{{ participant.image }}', ng-hide='noVideo')
       form(ng-submit='setNickname()')
         input(class='nickname', placeholder='No name',
           ng-model="participant.nickname", value="{{participant.nickname}}", ng-disabled='hasNickname()')
@@ -25,35 +25,36 @@ block chat-log
           td {{ when(message.timestamp) }}
           td
             img(ng-src='{{ message.image }}', ng-hide='noVideo',title='{{ message.nickname }}',alt='{{ message.nickname }}')
+            span(ng-show='noVideo'){{message.nickname}}
           td
             div(ng-bind-html='setHtmlToTrusted(message.text)')
 
 block chat-input
   canvas(id='copy',width='70',height='50')
+  form(ng-submit='sendMessage()')
+    div(class='chat-box')
+      div(class='textarea-container')
+        textarea(id='chat-input-element' class='form-control',ng-model='inputText',ng-keyup='keyup($event)')
+      button(class='btn btn-success') Send
+
+  div
+    button(class='btn btn-warning',ng-click='snoozeVideo()') Snooze
+    button(class='btn btn-danger',ng-click='killVideo()') Kill Video
+    div(class='btn-group dropup')
+      button(data-toggle="dropdown",class='btn btn-primary dropdown-toggle') Alert settings
+        span(class='caret')
+      ul(class='dropdown-menu')
+        li
+          a(href='#',ng-click='setAlertMode("silent")') Silent mode
+        li
+          a(href='#',ng-click='setAlertMode("quiet")') Quiet mode
+        li
+          a(href='#',ng-click='setAlertMode("funny")') Funny mode
+
   div(class='')
-    div Status: {{ status }}
-    div(ng-show='isError')
-      form(ng-submit='connect()')
-        label(for='room-password') Room password:
-        input(class='form-control',id='room-password',type='password',ng-model='roomPassword')
-        button(class='btn btn-default') Connect
-
-    form(ng-submit='sendMessage()')
-      div(class='chat-box')
-        div(class='textarea-container')
-        textarea(class='form-control',ng-model='inputText',ng-keyup='keyup($event)')
-        button(class='btn btn-success') Send
-
-      div
-        button(class='btn btn-warning',ng-click='snoozeVideo()') Snooze
-        button(class='btn btn-danger',ng-click='killVideo()') Kill Video
-
-        button(data-toggle="dropdown",class='btn btn-primary dropdown-toggle') Alert settings
-          span(class='caret')
-        ul(class='dropdown-menu')
-          li
-            a(href='#',ng-click='setAlertMode("silent")') Silent mode
-          li
-            a(href='#',ng-click='setAlertMode("quiet")') Quiet mode
-          li
-            a(href='#',ng-click='setAlertMode("funny")') Funny mode
+      div Status: {{ status }}
+      div(ng-show='isError')
+        form(ng-submit='connect()')
+          label(for='room-password') Room password:
+          input(class='form-control',id='room-password',type='password',ng-model='roomPassword')
+          button(class='btn btn-default') Connect

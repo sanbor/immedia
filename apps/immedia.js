@@ -91,6 +91,7 @@ module.exports = function(app, io) {
         console.log('Message through. Image size = ', msg && msg.image && msg.image.length);
         // Broadcast the message to the rest of the participants
         socket.broadcast.emit('message', msg);
+
         // Store the message in persistent storage
         var messageObject = new models.Message(msg);
         messageObject.roomId = room._id;
