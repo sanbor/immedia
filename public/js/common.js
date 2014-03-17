@@ -275,7 +275,6 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
       $scope.$digest();
     });
     socket.on('nickname', function(msg) {
-      console.log('someone is trying to set our nickname');
       // When someone is trying to set our nickname
       if (msg.participant === socket.socket.sessionid) {
         if (!$scope.myNickname) {
@@ -286,7 +285,10 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
           participantMap[msg.participant].nickname = msg.nickname;
         }
       }
+
+      $scope.$digest();
     });
+
     socket.on('update', function(msg) {
       if(!(msg.id in participantMap)) {
         participantMap[msg.id] = {};
@@ -300,6 +302,7 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
       
       $scope.$digest();
     });
+
     socket.on('exit', function(msg) {
       if(msg.id in participantMap) {
         delete participantMap[msg.id];

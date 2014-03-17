@@ -1,10 +1,20 @@
 extends layout
 
+block notification-area
+  div(ng-show='isError')
+    form(ng-submit='connect()', class='room-password form-horizontal')
+      div(class='form-group')
+        label(for='room-password', class='col-sm-1 control-label') Room password:
+        input(class='form-control col-sm-8',id='room-password',type='password',ng-model='roomPassword')
+      div(class='form-group')
+        div(class='col-sm-offset-1 col-sm-8')
+          button(class='btn btn-default btn-primary') Connect
+
 block chat-participants
   img(src='/img/snooze.png', id='snooze', style='display:none')
   video(autoplay,style='display:none', width='640',height='480')
 
-  div(class='participants')
+  div(class='participants', ng-hide='isError')
     div(class='participant')
       canvas(id='self',width='70',height='50', ng-hide='noVideo')
       form(ng-submit='setMyNickname()')
@@ -25,7 +35,7 @@ block chat-log
           td {{ when(message.timestamp) }}
           td
             img(ng-src='{{ message.image }}', ng-hide='noVideo',title='{{ message.nickname }}',alt='{{ message.nickname }}')
-            span(ng-show='noVideo'){{message.nickname}}
+            span(ng-show='noVideo') {{message.nickname}}
           td
             div(ng-bind-html='setHtmlToTrusted(message.text)')
 
@@ -53,8 +63,3 @@ block chat-input
 
   div(class='')
       div Status: {{ status }}
-      div(ng-show='isError')
-        form(ng-submit='connect()')
-          label(for='room-password') Room password:
-          input(class='form-control',id='room-password',type='password',ng-model='roomPassword')
-          button(class='btn btn-default') Connect
