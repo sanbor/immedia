@@ -139,7 +139,7 @@ controller('WebcamControl',['$scope', '$sce', function($scope, $sce) {
       nickname: this.participant.nickname
     });
     participantMap[this.participant.id].nicknameSet = true;
-    $('#chat-input-element').focus();
+    focusChatInputEl();
   };
   
   /**
